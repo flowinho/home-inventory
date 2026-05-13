@@ -614,10 +614,12 @@ export function App({ mode, onModeChange }: AppProps) {
                   borderRadius: 3,
                   overflow: "hidden",
                   flexShrink: 0,
-                  boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)"
+                  boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)",
+                  objectFit: "cover",
+                  objectPosition: "center"
                 }}
                 component="img"
-                src="/icons/icon-192.png"
+                src="/icons/appicon-cropped-source.png"
                 alt="Hausbestand App-Symbol"
               />
               <Box sx={{ minWidth: 0 }}>
@@ -880,9 +882,6 @@ export function App({ mode, onModeChange }: AppProps) {
                   >
                     <Box>
                       <Typography variant="h5">Aktuelle Navigation</Typography>
-                      <Typography color="text.secondary">
-                        So siehst du sofort, in welchem Teil deines Bestands du gerade arbeitest.
-                      </Typography>
                     </Box>
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                       <Chip
@@ -950,9 +949,6 @@ export function App({ mode, onModeChange }: AppProps) {
                     <Stack spacing={1.5}>
                       <Box>
                         <Typography variant="h5">Schnellzugriff</Typography>
-                        <Typography color="text.secondary">
-                          Favorisierte Aufbewahrungsorte direkt anspringen.
-                        </Typography>
                       </Box>
                       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                         {favoriteStorageLocations.map((storageLocation) => {
@@ -1320,15 +1316,12 @@ export function App({ mode, onModeChange }: AppProps) {
 
                   <Card sx={{ border: "1px solid", borderColor: "divider" }}>
                     <CardContent>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                        <Box>
-                          <Typography variant="h5">
-                            {selectedRoom ? `Aufbewahrungsorte in ${selectedRoom.name}` : "Aufbewahrungsorte"}
-                          </Typography>
-                          <Typography color="text.secondary">
-                            Tippe auf einen Ort, um den Bestand darunter zu sehen.
-                          </Typography>
-                        </Box>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                          <Box>
+                            <Typography variant="h5">
+                              {selectedRoom ? `Aufbewahrungsorte in ${selectedRoom.name}` : "Aufbewahrungsorte"}
+                            </Typography>
+                          </Box>
                         <Button
                           size="small"
                           startIcon={<SymbolIcon icon="add" />}
@@ -1427,17 +1420,14 @@ export function App({ mode, onModeChange }: AppProps) {
 
                   <Card sx={{ border: "1px solid", borderColor: "divider" }} ref={itemListRef}>
                     <CardContent>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                        <Box>
-                          <Typography variant="h5">
-                            {selectedStorageLocation
-                              ? `Bestand in ${selectedStorageLocation.name}`
-                              : "Bestand"}
-                          </Typography>
-                          <Typography color="text.secondary">
-                            Mengen können direkt mit `+` und `-` angepasst werden.
-                          </Typography>
-                        </Box>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                          <Box>
+                            <Typography variant="h5">
+                              {selectedStorageLocation
+                                ? `Bestand in ${selectedStorageLocation.name}`
+                                : "Bestand"}
+                            </Typography>
+                          </Box>
                         <Button
                           size="small"
                           startIcon={<SymbolIcon icon="add" />}
