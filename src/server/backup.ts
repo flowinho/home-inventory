@@ -16,6 +16,7 @@ import {
   getDatabasePath,
   initializeDatabase
 } from "./db.js";
+import { writeInventoryExportFile } from "./exporter.js";
 import type { BackupFileInfo, BackupOverview } from "../shared/models.js";
 
 const DEFAULT_BACKUP_TIME = "03:15";
@@ -56,6 +57,10 @@ function buildBackupFileName(date: Date) {
   return `inventory-backup-${parts.join("")}.sqlite`;
 }
 
+function buildExportFileName(date: Date) {
+  return buildBackupFileName(date).replace(".sqlite", ".json");
+}
+
 function getNextRunDate(now: Date, timeValue: string) {
   const { hours, minutes } = parseTime(timeValue);
   const next = new Date(now);
@@ -91,11 +96,33 @@ export function listBackups(): BackupFileInfo[] {
   return sortBackups(files);
 }
 
+export function listExports(): BackupFileInfo[] {
+  ensureDirectory(getBackupDirectoryPath());
+  const files = readdirSync(getBackupDirectoryPath(), { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+    .map((entry) => {
+      const fullPath = join(getBackupDirectoryPath(), entry.name);
+      const stat = statSync(fullPath);
+      return {
+        fileName: entry.name,
+        createdAt: stat.mtime.toISOString(),
+        sizeBytes: stat.size
+      } satisfies BackupFileInfo;
+    });
+
+  return sortBackups(files);
+}
+
 function pruneOldBackups() {
   const cutoff = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
   for (const backup of listBackups()) {
     if (new Date(backup.createdAt).getTime() < cutoff) {
       unlinkSync(join(getBackupDirectoryPath(), backup.fileName));
+    }
+  }
+  for (const exportFile of listExports()) {
+    if (new Date(exportFile.createdAt).getTime() < cutoff) {
+      unlinkSync(join(getBackupDirectoryPath(), exportFile.fileName));
     }
   }
 }
@@ -104,9 +131,13 @@ export async function createBackup(reason: "manual" | "automatic" | "before-rest
   ensureDirectory(getBackupDirectoryPath());
   checkpointDatabase();
   const suffix = reason === "manual" ? "" : `-${reason}`;
-  const fileName = buildBackupFileName(new Date()).replace(".sqlite", `${suffix}.sqlite`);
-  const destination = join(getBackupDirectoryPath(), fileName);
+  const now = new Date();
+  const sqliteFileName = buildBackupFileName(now).replace(".sqlite", `${suffix}.sqlite`);
+  const jsonFileName = buildExportFileName(now).replace(".json", `${suffix}.json`);
+  const destination = join(getBackupDirectoryPath(), sqliteFileName);
+  const exportDestination = join(getBackupDirectoryPath(), jsonFileName);
   await createBackupFile(destination);
+  writeInventoryExportFile(exportDestination);
   pruneOldBackups();
   return destination;
 }
@@ -167,6 +198,7 @@ export function initializeBackupService(databasePath: string, configuredBackupDi
 export function getBackupOverview(): BackupOverview {
   return {
     backups: listBackups(),
+    exports: listExports(),
     backupDirectory: getBackupDirectoryPath(),
     nextAutomaticBackupAt,
     automaticBackupTime

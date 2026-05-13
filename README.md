@@ -13,6 +13,7 @@ Hausbestand ist eine lokale, deutschsprachige Web-App zur Verwaltung von Haushal
 - Übersichten für `Niedriger Bestand`, `Bald ablaufend` und `Aufgebraucht`
 - Konflikterkennung bei gleichzeitiger Bearbeitung auf mehreren Geräten
 - Tägliche automatische Backups mit Rückspiel-Funktion in der Oberfläche
+- Manueller JSON-Export und JSON-Import über die Einstellungen
 - Heller und dunkler Modus mit lokaler Speicherung der Auswahl
 - Material UI Oberfläche mit lokal ausgelieferten Material Symbols
 - Lokales App-Icon und Web-App-Manifest für Android- und iOS-Homescreens
@@ -105,8 +106,11 @@ Die Anwendung erstellt automatisch einmal täglich ein Backup:
 - Standardzeit: `03:15`
 - Standard-Aufbewahrung: `14` Tage
 - Speicherort: `/data/backups`
+- Zusätzlich wird pro täglichem Lauf auch ein JSON-Export des Bestands abgelegt
 
 Zusätzlich kann in der Oberfläche unter `Hinweise` jederzeit manuell ein Backup erzeugt oder ein vorhandenes Backup zurückgespielt werden. Vor jedem Restore legt die App automatisch noch ein Sicherheits-Backup des aktuellen Stands an.
+
+Unter `Einstellungen` kann der aktuelle Datenstand außerdem als JSON-Datei exportiert und später wieder importiert werden. Der JSON-Import ersetzt den aktuellen Bestand vollständig und legt davor ebenfalls automatisch ein Sicherheits-Backup an.
 
 ### Backup der SQLite-Datei auf den Host kopieren
 
@@ -208,6 +212,8 @@ Wichtige Endpunkte:
 - `GET /api/backups`
 - `POST /api/backups`
 - `POST /api/backups/restore`
+- `GET /api/export`
+- `POST /api/import`
 - `GET /api/rooms`
 - `POST /api/rooms`
 - `PUT /api/rooms/:id`

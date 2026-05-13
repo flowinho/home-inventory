@@ -1,39 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
   <title id="title">Hausbestand App-Symbol</title>
-  <desc id="desc">Ein stilisiertes Haus mit Vorratsregal und Kisten.</desc>
+  <desc id="desc">Material-Home-Symbol auf gruenem Hintergrund.</desc>
   <defs>
-    <linearGradient id="bg" x1="140" y1="120" x2="860" y2="900" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#1d8a7c" />
-      <stop offset="1" stop-color="#12554f" />
+    <linearGradient id="bg" x1="144" y1="112" x2="888" y2="920" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1f8a7d" />
+      <stop offset="1" stop-color="#114f49" />
     </linearGradient>
-    <linearGradient id="panel" x1="320" y1="300" x2="700" y2="760" gradientUnits="userSpaceOnUse">
+    <linearGradient id="glow" x1="246" y1="182" x2="774" y2="814" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#fff7eb" />
-      <stop offset="1" stop-color="#f2dcc0" />
-    </linearGradient>
-    <linearGradient id="crate" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f7b267" />
-      <stop offset="1" stop-color="#d97925" />
+      <stop offset="1" stop-color="#f6d7a7" />
     </linearGradient>
   </defs>
   <rect x="64" y="64" width="896" height="896" rx="224" fill="url(#bg)" />
+  <circle cx="512" cy="512" r="270" fill="#0d3f3b" opacity=".18" />
   <path
-    d="M248 438 512 226l264 212v272c0 47-37 84-84 84H332c-47 0-84-37-84-84V438Z"
-    fill="url(#panel)"
+    d="M512 250 230 482h72v246c0 24 20 44 44 44h164V600h84v172h164c24 0 44-20 44-44V482h72L512 250Z"
+    fill="url(#glow)"
   />
   <path
-    d="M214 444c-16 0-31-7-41-20-17-22-13-53 9-70l297-236c19-15 45-15 64 0l298 236c22 17 26 48 9 70-18 22-48 26-70 9L512 221 245 433c-9 7-20 11-31 11Z"
+    d="M512 202 170 476c-15 12-18 34-6 49 12 15 34 18 49 6l299-239 299 239c15 12 37 9 49-6 12-15 9-37-6-49L512 202Z"
     fill="#fffdf8"
-    opacity=".92"
+    opacity=".96"
   />
-  <rect x="360" y="428" width="304" height="280" rx="34" fill="#186860" opacity=".12" />
-  <rect x="390" y="390" width="244" height="48" rx="20" fill="#146c63" />
-  <rect x="408" y="476" width="208" height="28" rx="14" fill="#146c63" opacity=".82" />
-  <rect x="408" y="566" width="208" height="28" rx="14" fill="#146c63" opacity=".82" />
-  <rect x="432" y="438" width="68" height="76" rx="18" fill="url(#crate)" />
-  <rect x="524" y="438" width="68" height="76" rx="18" fill="url(#crate)" />
-  <rect x="432" y="528" width="68" height="76" rx="18" fill="url(#crate)" />
-  <rect x="524" y="528" width="68" height="76" rx="18" fill="url(#crate)" />
-  <path d="M454 438v76M546 438v76M454 528v76M546 528v76" stroke="#fff4e6" stroke-linecap="round" stroke-width="10" />
-  <circle cx="746" cy="740" r="88" fill="#f7b267" />
-  <path d="M709 740h74M746 703v74" stroke="#12554f" stroke-linecap="round" stroke-width="24" />
+  <path
+    d="M450 772V592c0-18 14-32 32-32h60c18 0 32 14 32 32v180h-124Z"
+    fill="#f0b35f"
+  />
+  <path
+    d="M370 500h284"
+    stroke="#17675f"
+    stroke-linecap="round"
+    stroke-width="34"
+    opacity=".88"
+  />
 </svg>

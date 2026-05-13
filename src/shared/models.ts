@@ -99,7 +99,16 @@ export interface BackupFileInfo {
 
 export interface BackupOverview {
   backups: BackupFileInfo[];
+  exports: BackupFileInfo[];
   backupDirectory: string;
   nextAutomaticBackupAt: string | null;
   automaticBackupTime: string;
+}
+
+export interface InventoryExportData {
+  version: number;
+  exportedAt: string;
+  rooms: Room[];
+  storageLocations: StorageLocation[];
+  items: InventoryItem[];
 }

@@ -46,7 +46,7 @@ import { ConfirmDialog } from "./components/ConfirmDialog";
 import { SymbolIcon } from "./components/SymbolIcon";
 import { formatDate, formatDateTime, formatQuantity } from "./utils/format";
 
-type ViewMode = "uebersicht" | "suche" | "hinweise";
+type ViewMode = "uebersicht" | "suche" | "hinweise" | "einstellungen";
 
 interface AppProps {
   mode: ThemeMode;
@@ -147,6 +147,7 @@ function emptyItemForm(storageLocationId?: number): ItemFormState {
 }
 
 export function App({ mode, onModeChange }: AppProps) {
+  const importInputRef = React.useRef<HTMLInputElement | null>(null);
   const [dashboard, setDashboard] = React.useState<DashboardResponse | null>(null);
   const [alerts, setAlerts] = React.useState<AlertOverview | null>(null);
   const [backups, setBackups] = React.useState<BackupOverview | null>(null);
@@ -465,6 +466,46 @@ export function App({ mode, onModeChange }: AppProps) {
     });
   };
 
+  const downloadJsonExport = async () => {
+    try {
+      const response = await fetch("/api/export");
+      if (!response.ok) {
+        throw new Error("Export konnte nicht erstellt werden.");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `hausbestand-export-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (exportError) {
+      setError((exportError as Error).message);
+    }
+  };
+
+  const importJsonFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text) as unknown;
+      await request("/api/import", {
+        method: "POST",
+        body: JSON.stringify(data)
+      });
+      await refreshData();
+      setViewMode("einstellungen");
+    } catch (importError) {
+      setError((importError as Error).message);
+    } finally {
+      event.target.value = "";
+    }
+  };
+
   const quickStats = [
     {
       label: "Räume",
@@ -538,8 +579,22 @@ export function App({ mode, onModeChange }: AppProps) {
           >
             <Stack direction="row" spacing={1} minWidth="max-content" alignItems="center">
               <Chip
-                icon={<SymbolIcon icon="grid_view" />}
-                label="Übersicht"
+                label={
+                  <Stack direction="row" spacing={0.75} alignItems="center">
+                    <Box
+                      sx={{
+                        display: "grid",
+                        placeItems: "center",
+                        width: 18,
+                        height: 18,
+                        "& span": { fontSize: "1rem" }
+                      }}
+                    >
+                      <SymbolIcon icon="grid_view" />
+                    </Box>
+                    <span>Übersicht</span>
+                  </Stack>
+                }
                 clickable
                 color={viewMode === "uebersicht" ? "primary" : "default"}
                 variant={viewMode === "uebersicht" ? "filled" : "outlined"}
@@ -558,6 +613,28 @@ export function App({ mode, onModeChange }: AppProps) {
                   }}
                 />
               ))}
+              <Chip
+                label={
+                  <Stack direction="row" spacing={0.75} alignItems="center">
+                    <Box
+                      sx={{
+                        display: "grid",
+                        placeItems: "center",
+                        width: 18,
+                        height: 18,
+                        "& span": { fontSize: "1rem" }
+                      }}
+                    >
+                      <SymbolIcon icon="settings" />
+                    </Box>
+                    <span>Einstellungen</span>
+                  </Stack>
+                }
+                clickable
+                color={viewMode === "einstellungen" ? "primary" : "default"}
+                variant={viewMode === "einstellungen" ? "filled" : "outlined"}
+                onClick={() => setViewMode("einstellungen")}
+              />
             </Stack>
           </Box>
         </Box>
@@ -627,6 +704,7 @@ export function App({ mode, onModeChange }: AppProps) {
             <Tab value="uebersicht" label="Übersicht" />
             <Tab value="suche" label="Suche" />
             <Tab value="hinweise" label="Hinweise" />
+            <Tab value="einstellungen" label="Einstellungen" />
           </Tabs>
 
           {error ? <Alert severity="error">{error}</Alert> : null}
@@ -667,6 +745,36 @@ export function App({ mode, onModeChange }: AppProps) {
                   </Grid>
                 ))}
               </Grid>
+
+              <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+                <CardContent>
+                  <Stack
+                    direction={{ xs: "column", md: "row" }}
+                    spacing={1.5}
+                    alignItems={{ md: "center" }}
+                    justifyContent="space-between"
+                  >
+                    <Box>
+                      <Typography variant="h5">Aktuelle Navigation</Typography>
+                      <Typography color="text.secondary">
+                        So siehst du sofort, in welchem Teil deines Bestands du gerade arbeitest.
+                      </Typography>
+                    </Box>
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                      <Chip
+                        color="primary"
+                        variant="filled"
+                        label={`Raum: ${selectedRoom?.name ?? "Nicht gewählt"}`}
+                      />
+                      <Chip
+                        color="secondary"
+                        variant="filled"
+                        label={`Ort: ${selectedStorageLocation?.name ?? "Nicht gewählt"}`}
+                      />
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
 
               {viewMode === "suche" ? (
                 <Card sx={{ border: "1px solid", borderColor: "divider" }}>
@@ -809,7 +917,89 @@ export function App({ mode, onModeChange }: AppProps) {
                       </Stack>
                     </CardContent>
                   </Card>
+
+                  <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+                    <CardContent>
+                      <Typography variant="h5" mb={2}>
+                        Tägliche JSON-Exporte
+                      </Typography>
+                      <Stack spacing={1.5}>
+                        {backups?.exports.map((exportFile) => (
+                          <Card key={exportFile.fileName} variant="outlined">
+                            <CardContent sx={{ pb: "16px !important" }}>
+                              <Typography fontWeight={700}>{exportFile.fileName}</Typography>
+                              <Typography color="text.secondary">
+                                Erstellt: {formatDateTime(exportFile.createdAt)} · Größe:{" "}
+                                {Math.round(exportFile.sizeBytes / 1024)} KB
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        {backups && backups.exports.length === 0 ? (
+                          <Typography color="text.secondary">
+                            Es wurden noch keine JSON-Exporte gespeichert.
+                          </Typography>
+                        ) : null}
+                      </Stack>
+                    </CardContent>
+                  </Card>
                 </Stack>
+              ) : null}
+
+              {viewMode === "einstellungen" ? (
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, lg: 6 }}>
+                    <Card sx={{ border: "1px solid", borderColor: "divider", height: "100%" }}>
+                      <CardContent>
+                        <Stack spacing={2}>
+                          <Box>
+                            <Typography variant="h5">Daten exportieren</Typography>
+                            <Typography color="text.secondary">
+                              Lade den aktuellen Datenstand als JSON-Datei herunter.
+                            </Typography>
+                          </Box>
+                          <Button
+                            variant="contained"
+                            startIcon={<SymbolIcon icon="download" />}
+                            onClick={() => void downloadJsonExport()}
+                          >
+                            JSON exportieren
+                          </Button>
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, lg: 6 }}>
+                    <Card sx={{ border: "1px solid", borderColor: "divider", height: "100%" }}>
+                      <CardContent>
+                        <Stack spacing={2}>
+                          <Box>
+                            <Typography variant="h5">Daten importieren</Typography>
+                            <Typography color="text.secondary">
+                              Spiele eine zuvor exportierte JSON-Datei ein. Vor dem Import wird
+                              automatisch ein Sicherheits-Backup erstellt.
+                            </Typography>
+                          </Box>
+                          <input
+                            ref={importInputRef}
+                            type="file"
+                            accept="application/json,.json"
+                            hidden
+                            onChange={(event) => void importJsonFile(event)}
+                          />
+                          <Button
+                            variant="outlined"
+                            startIcon={<SymbolIcon icon="upload" />}
+                            onClick={() => importInputRef.current?.click()}
+                          >
+                            JSON-Datei auswählen
+                          </Button>
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
               ) : null}
 
               {viewMode === "uebersicht" ? (
@@ -834,14 +1024,26 @@ export function App({ mode, onModeChange }: AppProps) {
                               variant={selectedRoomId === room.id ? "elevation" : "outlined"}
                               sx={{
                                 cursor: "pointer",
-                                borderColor: selectedRoomId === room.id ? "primary.main" : "divider"
+                                borderWidth: selectedRoomId === room.id ? 2 : 1,
+                                borderColor: selectedRoomId === room.id ? "primary.main" : "divider",
+                                bgcolor:
+                                  selectedRoomId === room.id ? "rgba(20, 108, 99, 0.10)" : "background.paper",
+                                boxShadow:
+                                  selectedRoomId === room.id
+                                    ? "0 14px 28px rgba(20, 108, 99, 0.16)"
+                                    : undefined
                               }}
                               onClick={() => setSelectedRoomId(room.id)}
                             >
                               <CardContent sx={{ pb: "16px !important" }}>
                                 <Stack direction="row" justifyContent="space-between" alignItems="start">
                                   <Box>
-                                    <Typography variant="h6">{room.name}</Typography>
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                      <Typography variant="h6">{room.name}</Typography>
+                                      {selectedRoomId === room.id ? (
+                                        <Chip size="small" color="primary" label="Aktiver Raum" />
+                                      ) : null}
+                                    </Stack>
                                     <Typography color="text.secondary">
                                       {room.storageCount} Aufbewahrungsorte · {room.itemCount} Gegenstände
                                     </Typography>
@@ -907,8 +1109,17 @@ export function App({ mode, onModeChange }: AppProps) {
                               variant={selectedStorageId === storageLocation.id ? "elevation" : "outlined"}
                               sx={{
                                 cursor: "pointer",
+                                borderWidth: selectedStorageId === storageLocation.id ? 2 : 1,
                                 borderColor:
-                                  selectedStorageId === storageLocation.id ? "primary.main" : "divider"
+                                  selectedStorageId === storageLocation.id ? "secondary.main" : "divider",
+                                bgcolor:
+                                  selectedStorageId === storageLocation.id
+                                    ? "rgba(184, 92, 0, 0.10)"
+                                    : "background.paper",
+                                boxShadow:
+                                  selectedStorageId === storageLocation.id
+                                    ? "0 14px 28px rgba(184, 92, 0, 0.14)"
+                                    : undefined
                               }}
                               onClick={() => setSelectedStorageId(storageLocation.id)}
                             >
@@ -928,7 +1139,12 @@ export function App({ mode, onModeChange }: AppProps) {
                                       <SymbolIcon icon={getStorageIcon(storageLocation.type)} />
                                     </Box>
                                     <Box>
-                                      <Typography fontWeight={700}>{storageLocation.name}</Typography>
+                                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                                        <Typography fontWeight={700}>{storageLocation.name}</Typography>
+                                        {selectedStorageId === storageLocation.id ? (
+                                          <Chip size="small" color="secondary" label="Aktiver Ort" />
+                                        ) : null}
+                                      </Stack>
                                       <Typography color="text.secondary">
                                         {storageLocation.type} · {storageLocation.itemCount} Gegenstände
                                       </Typography>

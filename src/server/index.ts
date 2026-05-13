@@ -9,6 +9,7 @@ import {
   initializeBackupService,
   restoreBackupFile
 } from "./backup.js";
+import { buildInventoryExport, importInventoryData } from "./exporter.js";
 import {
   initializeDatabase,
   insertAndGetId,
@@ -270,6 +271,15 @@ app.get("/api/backups", (_request, response) => {
   response.json(getBackupOverview());
 });
 
+app.get("/api/export", (_request, response) => {
+  response.setHeader("Content-Type", "application/json; charset=utf-8");
+  response.setHeader(
+    "Content-Disposition",
+    `attachment; filename="hausbestand-export-${new Date().toISOString().slice(0, 10)}.json"`
+  );
+  response.json(buildInventoryExport());
+});
+
 app.post("/api/backups", async (_request, response) => {
   try {
     const backupPath = await createBackup("manual");
@@ -290,6 +300,22 @@ app.post("/api/backups/restore", async (request, response) => {
     await restoreBackupFile(fileName);
     response.json({
       message: "Backup wurde erfolgreich zurückgespielt.",
+      ...getBackupOverview()
+    });
+  } catch (error) {
+    handleError(response, error);
+  } finally {
+    maintenanceMode = false;
+  }
+});
+
+app.post("/api/import", async (request, response) => {
+  try {
+    maintenanceMode = true;
+    await createBackup("before-restore");
+    importInventoryData(request.body);
+    response.json({
+      message: "Daten wurden erfolgreich importiert.",
       ...getBackupOverview()
     });
   } catch (error) {
