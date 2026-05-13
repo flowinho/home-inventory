@@ -770,11 +770,82 @@ export function App({ mode, onModeChange }: AppProps) {
             </CardContent>
           </Card>
 
-          <Tabs value={viewMode} onChange={(_event, value) => setViewMode(value)} variant="scrollable">
-            <Tab value="uebersicht" label="Übersicht" />
-            <Tab value="suche" label="Suche" />
-            <Tab value="hinweise" label="Hinweise" />
-            <Tab value="einstellungen" label="Einstellungen" />
+          <Tabs
+            value={viewMode}
+            onChange={(_event, value) => setViewMode(value)}
+            variant="scrollable"
+            sx={{
+              minHeight: 56,
+              "& .MuiTabs-indicator": {
+                display: "none"
+              },
+              "& .MuiTabs-flexContainer": {
+                gap: 1,
+                flexWrap: "wrap"
+              }
+            }}
+          >
+            <Tab
+              value="uebersicht"
+              icon={<SymbolIcon icon="grid_view" />}
+              iconPosition="start"
+              label="Übersicht"
+              sx={{
+                minHeight: 44,
+                borderRadius: 999,
+                border: "1px solid",
+                borderColor: "divider",
+                textTransform: "none",
+                bgcolor: viewMode === "uebersicht" ? "primary.main" : "background.paper",
+                color: viewMode === "uebersicht" ? "primary.contrastText !important" : "text.primary"
+              }}
+            />
+            <Tab
+              value="suche"
+              icon={<SymbolIcon icon="search" />}
+              iconPosition="start"
+              label="Suche"
+              sx={{
+                minHeight: 44,
+                borderRadius: 999,
+                border: "1px solid",
+                borderColor: "divider",
+                textTransform: "none",
+                bgcolor: viewMode === "suche" ? "primary.main" : "background.paper",
+                color: viewMode === "suche" ? "primary.contrastText !important" : "text.primary"
+              }}
+            />
+            <Tab
+              value="hinweise"
+              icon={<SymbolIcon icon="notifications" />}
+              iconPosition="start"
+              label="Hinweise"
+              sx={{
+                minHeight: 44,
+                borderRadius: 999,
+                border: "1px solid",
+                borderColor: "divider",
+                textTransform: "none",
+                bgcolor: viewMode === "hinweise" ? "primary.main" : "background.paper",
+                color: viewMode === "hinweise" ? "primary.contrastText !important" : "text.primary"
+              }}
+            />
+            <Tab
+              value="einstellungen"
+              icon={<SymbolIcon icon="settings" />}
+              iconPosition="start"
+              label="Einstellungen"
+              sx={{
+                minHeight: 44,
+                borderRadius: 999,
+                border: "1px solid",
+                borderColor: "divider",
+                textTransform: "none",
+                bgcolor: viewMode === "einstellungen" ? "primary.main" : "background.paper",
+                color:
+                  viewMode === "einstellungen" ? "primary.contrastText !important" : "text.primary"
+              }}
+            />
           </Tabs>
 
           {error ? <Alert severity="error">{error}</Alert> : null}
@@ -786,36 +857,6 @@ export function App({ mode, onModeChange }: AppProps) {
 
           {!loading && dashboard ? (
             <>
-              <Grid container spacing={2}>
-                {quickStats.map((stat) => (
-                  <Grid key={stat.label} size={{ xs: 12, sm: 4 }}>
-                    <Card sx={{ border: "1px solid", borderColor: "divider" }}>
-                      <CardContent>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Box>
-                            <Typography color="text.secondary">{stat.label}</Typography>
-                            <Typography variant="h4">{stat.value}</Typography>
-                          </Box>
-                          <Box
-                            sx={{
-                              display: "grid",
-                              placeItems: "center",
-                              width: 46,
-                              height: 46,
-                              borderRadius: 3,
-                              bgcolor: "secondary.main",
-                              color: "secondary.contrastText"
-                            }}
-                          >
-                            <SymbolIcon icon={stat.icon} />
-                          </Box>
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-
               <Card sx={{ border: "1px solid", borderColor: "divider" }}>
                 <CardContent>
                   <Stack
@@ -972,6 +1013,35 @@ export function App({ mode, onModeChange }: AppProps) {
 
               {viewMode === "hinweise" && alerts ? (
                 <Stack spacing={2}>
+                  <Grid container spacing={2}>
+                    {quickStats.map((stat) => (
+                      <Grid key={stat.label} size={{ xs: 12, sm: 4 }}>
+                        <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+                          <CardContent>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                              <Box>
+                                <Typography color="text.secondary">{stat.label}</Typography>
+                                <Typography variant="h4">{stat.value}</Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display: "grid",
+                                  placeItems: "center",
+                                  width: 46,
+                                  height: 46,
+                                  borderRadius: 3,
+                                  bgcolor: "secondary.main",
+                                  color: "secondary.contrastText"
+                                }}
+                              >
+                                <SymbolIcon icon={stat.icon} />
+                              </Box>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
                   <Grid container spacing={2}>
                     {[
                       { title: "Niedriger Bestand", data: alerts.lowStock, icon: "warning" },
@@ -1389,7 +1459,7 @@ export function App({ mode, onModeChange }: AppProps) {
                                       />
                                     ) : null}
                                     {item.expirationDate ? (
-                                      <Chip size="small" label={`Ablauf: ${formatDate(item.expirationDate)}`} />
+                                      <Chip size="small" label={`MHD/BBD: ${formatDate(item.expirationDate)}`} />
                                     ) : null}
                                   </Stack>
                                   {item.notes ? (
