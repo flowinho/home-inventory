@@ -1,0 +1,20 @@
+services:
+  hausbestand:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hausbestand
+    restart: unless-stopped
+    ports:
+      - "13337:13337"
+    environment:
+      PORT: "13337"
+      DATABASE_PATH: /data/inventory.sqlite
+      BACKUP_DIRECTORY: /data/backups
+      BACKUP_TIME: "03:15"
+      BACKUP_RETENTION_DAYS: "14"
+    volumes:
+      - hausbestand-daten:/data
+
+volumes:
+  hausbestand-daten:
