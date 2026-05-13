@@ -1225,9 +1225,11 @@ export function App({ mode, onModeChange }: AppProps) {
                                       >
                                         <SymbolIcon icon={room.icon ?? "home"} />
                                       </Box>
-                                      <Typography variant="h6">{room.name}</Typography>
+                                      <Typography fontWeight={700} noWrap>
+                                        {room.name}
+                                      </Typography>
                                     </Stack>
-                                    <Typography mt={0.5} color="text.secondary">
+                                    <Typography mt={0.5} color="text.secondary" variant="body2">
                                       {room.storageCount} Aufbewahrungsorte · {room.itemCount} Gegenstände
                                     </Typography>
                                   </Box>
@@ -1284,8 +1286,8 @@ export function App({ mode, onModeChange }: AppProps) {
                                 key={storageLocation.id}
                                 variant={selectedStorageId === storageLocation.id ? "elevation" : "outlined"}
                                 sx={{
-                                  minWidth: { xs: 220, md: 250 },
-                                  maxWidth: { xs: 220, md: 280 },
+                                  minWidth: { xs: 260, md: 320 },
+                                  maxWidth: { xs: 260, md: 340 },
                                   cursor: "pointer",
                                   borderWidth: selectedStorageId === storageLocation.id ? 2 : 1,
                                   borderColor:
@@ -1323,7 +1325,11 @@ export function App({ mode, onModeChange }: AppProps) {
                                       </Box>
                                       <Box sx={{ minWidth: 0, flex: 1 }}>
                                         <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0 }}>
-                                          <Typography fontWeight={700} noWrap>
+                                          <Typography
+                                            fontWeight={700}
+                                            noWrap
+                                            sx={{ fontSize: "1rem" }}
+                                          >
                                             {storageLocation.name}
                                           </Typography>
                                           {storageLocation.isFavorite === 1 ? (
