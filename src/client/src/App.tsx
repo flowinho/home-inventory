@@ -836,6 +836,41 @@ export function App({ mode, onModeChange }: AppProps) {
 
           {!loading && dashboard ? (
             <>
+              {alerts && alerts.expiringSoon.length > 0 ? (
+                <Card
+                  sx={{
+                    border: "1px solid",
+                    borderColor: "#ef9a9a",
+                    bgcolor: "#fdecec"
+                  }}
+                >
+                  <CardContent>
+                    <Stack spacing={1.5}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <SymbolIcon icon="event_busy" />
+                        <Typography variant="h5">Bald ablaufend</Typography>
+                      </Stack>
+                      <Typography color="text.secondary">
+                        Diese Artikel nähern sich ihrem MHD und sollten bald geprüft werden.
+                      </Typography>
+                      <Stack spacing={1}>
+                        {alerts.expiringSoon.slice(0, 6).map((item) => (
+                          <Box key={item.id}>
+                            <Typography fontWeight={600}>
+                              {item.name} · {formatQuantity(item.quantity)} {item.unit}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {item.roomName} / {item.storageLocationName} · MHD:{" "}
+                              {formatDate(item.expirationDate)}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              ) : null}
+
               <Card sx={{ border: "1px solid", borderColor: "divider" }}>
                 <CardContent>
                   <Stack
@@ -1025,10 +1060,9 @@ export function App({ mode, onModeChange }: AppProps) {
                     {[
                       { title: "Niedriger Bestand", data: alerts.lowStock, icon: "warning" },
                       { title: "MHD in 3 Tagen", data: alerts.bddSoon, icon: "schedule" },
-                      { title: "Bald ablaufend", data: alerts.expiringSoon, icon: "event_busy" },
                       { title: "Aufgebraucht", data: alerts.depleted, icon: "remove_shopping_cart" }
                     ].map((section) => (
-                      <Grid key={section.title} size={{ xs: 12, md: 6, xl: 3 }}>
+                      <Grid key={section.title} size={{ xs: 12, md: 6, xl: 4 }}>
                         <Card sx={{ height: "100%", border: "1px solid", borderColor: "divider" }}>
                           <CardContent>
                             <Stack direction="row" spacing={1} alignItems="center" mb={1.5}>
