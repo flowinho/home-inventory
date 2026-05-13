@@ -5,18 +5,21 @@ Hausbestand ist eine lokale, deutschsprachige Web-App zur Verwaltung von Haushal
 ## Funktionen
 
 - Räume verwalten, zum Beispiel `Küche`, `Keller`, `Bad` oder `Garage`
+- Räume können eigene Material-Icons erhalten
 - Aufbewahrungsorte pro Raum verwalten, zum Beispiel `Kühlschrank`, `Regal` oder `Schublade`
 - Gegenstände mit Menge, Einheit, Kategorie, Mindestmenge, Ablaufdatum und Notizen pflegen
 - Schnelle Mengenänderung mit `+` und `-`
 - Gegenstände direkt entnehmen, verschieben oder löschen
+- Gegenstände können gezielt in andere Aufbewahrungsorte verschoben werden, zum Beispiel vom Kellerregal in den Kühlschrank
 - Globale Suche nach Gegenständen
-- Übersichten für `Niedriger Bestand`, `Bald ablaufend` und `Aufgebraucht`
+- Übersichten für `Niedriger Bestand`, `MHD in 3 Tagen`, `Bald ablaufend` und `Aufgebraucht`
 - Konflikterkennung bei gleichzeitiger Bearbeitung auf mehreren Geräten
 - Tägliche automatische Backups mit Rückspiel-Funktion in der Oberfläche
 - Manueller JSON-Export und JSON-Import über die Einstellungen
 - Heller und dunkler Modus mit lokaler Speicherung der Auswahl
 - Material UI Oberfläche mit lokal ausgelieferten Material Symbols
 - Lokales App-Icon und Web-App-Manifest für Android- und iOS-Homescreens
+- Sichtbare Navigationsanzeige für aktuell ausgewählten Raum und Aufbewahrungsort
 
 ## Voraussetzungen
 
@@ -70,8 +73,9 @@ docker compose logs -f
 1. Browser öffnen
 2. `http://<raspberry-pi-ip>:13337` aufrufen
 3. Zuerst einen Raum anlegen
-4. Danach einen oder mehrere Aufbewahrungsorte anlegen
-5. Anschließend Gegenstände hinzufügen
+4. Optional direkt ein passendes Raum-Icon auswählen
+5. Danach einen oder mehrere Aufbewahrungsorte anlegen
+6. Anschließend Gegenstände hinzufügen
 
 ## Upgrade
 
@@ -145,6 +149,16 @@ In der Oberfläche:
 3. `Zurückspielen` bestätigen
 
 Vor dem Restore sichert die App den aktuellen Datenstand automatisch zusätzlich.
+
+### JSON-Import direkt in der App
+
+In der Oberfläche:
+
+1. `Einstellungen` öffnen
+2. `JSON-Datei auswählen` anklicken
+3. Eine zuvor exportierte JSON-Datei auswählen
+
+Der Import ersetzt den aktuellen Datenbestand vollständig. Vorher wird automatisch ein Sicherheits-Backup angelegt.
 
 ### SQLite-Datei wieder einspielen
 
@@ -248,6 +262,11 @@ Wichtige Endpunkte:
 
 - Die Meldung weist meist auf eine gleichzeitige Änderung von einem anderen Gerät hin
 - Ansicht neu laden und die Änderung mit dem aktuellen Stand erneut ausführen
+
+### Ein Gegenstand wurde nicht verschoben
+
+- Prüfen, ob im Dialog wirklich ein anderer Ziel-Aufbewahrungsort ausgewählt wurde
+- Nach dem Verschieben springt die Ansicht automatisch zum Ziel-Ort
 
 ### Es wurden keine automatischen Backups erstellt
 

@@ -262,6 +262,10 @@ function buildAlerts() {
   return { depleted, lowStock, expiringSoon, bddSoon };
 }
 
+function getBbdSoonItems() {
+  return buildAlerts().bddSoon;
+}
+
 app.get("/api/meta", (_request, response) => {
   response.json({
     storageTypes: STORAGE_TYPES
