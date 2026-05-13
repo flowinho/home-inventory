@@ -50,7 +50,7 @@ import { ConfirmDialog } from "./components/ConfirmDialog";
 import { SymbolIcon } from "./components/SymbolIcon";
 import { formatDate, formatDateTime, formatQuantity } from "./utils/format";
 
-type ViewMode = "uebersicht" | "suche" | "hinweise" | "einstellungen";
+type ViewMode = "uebersicht" | "gesamtbestand" | "suche" | "hinweise" | "einstellungen";
 
 interface AppProps {
   mode: ThemeMode;
@@ -253,6 +253,22 @@ export function App({ mode, onModeChange }: AppProps) {
   const favoriteStorageLocations = React.useMemo(
     () => storageLocations.filter((storageLocation) => storageLocation.isFavorite === 1),
     [storageLocations]
+  );
+  const inventoryByRoom = React.useMemo(
+    () =>
+      rooms
+        .map((room) => ({
+          room,
+          storageLocations: storageLocations
+            .filter((storageLocation) => storageLocation.roomId === room.id)
+            .map((storageLocation) => ({
+              storageLocation,
+              items: items.filter((item) => item.storageLocationId === storageLocation.id)
+            }))
+            .filter((entry) => entry.items.length > 0)
+        }))
+        .filter((entry) => entry.storageLocations.length > 0),
+    [items, rooms, storageLocations]
   );
 
   React.useEffect(() => {
@@ -600,6 +616,90 @@ export function App({ mode, onModeChange }: AppProps) {
     }
   ];
 
+  const renderItemCard = (item: ItemWithLocation) => (
+    <Card key={item.id} variant="outlined">
+      <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={1.5}
+          justifyContent="space-between"
+          alignItems={{ md: "center" }}
+        >
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant="subtitle1" fontWeight={700}>
+              {item.name}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {formatQuantity(item.quantity)} {item.unit}
+              {item.category ? ` · ${item.category}` : ""}
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
+              {item.minimumQuantity != null ? (
+                <Chip
+                  size="small"
+                  color={item.quantity <= item.minimumQuantity ? "warning" : "default"}
+                  label={`Mindestmenge: ${formatQuantity(item.minimumQuantity)} ${item.unit}`}
+                />
+              ) : null}
+              {item.expirationDate ? (
+                <Chip size="small" label={`MHD: ${formatDate(item.expirationDate)}`} />
+              ) : null}
+            </Stack>
+            {item.notes ? (
+              <Typography mt={0.75} variant="body2" color="text.secondary">
+                {item.notes}
+              </Typography>
+            ) : null}
+          </Box>
+
+          <Stack
+            direction="row"
+            spacing={0.75}
+            alignItems="center"
+            flexWrap="wrap"
+            justifyContent={{ md: "flex-end" }}
+          >
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => mutateItem(item.id, "decrease", { amount: 1 })}
+            >
+              -
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => mutateItem(item.id, "increase", { amount: 1 })}
+            >
+              +
+            </Button>
+            <IconButton
+              size="small"
+              aria-label={`${item.name} bearbeiten`}
+              onClick={() => openItemDialog(item)}
+            >
+              <SymbolIcon icon="edit" />
+            </IconButton>
+            <IconButton
+              size="small"
+              aria-label={`${item.name} verschieben`}
+              onClick={() => openMoveDialog(item)}
+            >
+              <SymbolIcon icon="forward" />
+            </IconButton>
+            <IconButton
+              size="small"
+              aria-label={`${item.name} löschen`}
+              onClick={() => deleteEntity("item", item)}
+            >
+              <SymbolIcon icon="delete" />
+            </IconButton>
+          </Stack>
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <Box sx={{ pb: 10 }}>
       <AppBar position="sticky" color="transparent" elevation={0}>
@@ -726,6 +826,12 @@ export function App({ mode, onModeChange }: AppProps) {
               icon={<SymbolIcon icon="grid_view" />}
               iconPosition="start"
               label="Übersicht"
+            />
+            <Tab
+              value="gesamtbestand"
+              icon={<SymbolIcon icon="inventory_2" />}
+              iconPosition="start"
+              label="Gesamtbestand"
             />
             <Tab
               value="suche"
@@ -964,6 +1070,103 @@ export function App({ mode, onModeChange }: AppProps) {
                     )}
                   </CardContent>
                 </Card>
+              ) : null}
+
+              {viewMode === "gesamtbestand" ? (
+                <Stack spacing={2}>
+                  {inventoryByRoom.length > 0 ? (
+                    inventoryByRoom.map(({ room, storageLocations: groupedStorageLocations }) => (
+                      <Card key={room.id} sx={{ border: "1px solid", borderColor: "divider" }}>
+                        <CardContent>
+                          <Stack spacing={2}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <Box
+                                sx={{
+                                  display: "grid",
+                                  placeItems: "center",
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 2.5,
+                                  bgcolor: "action.hover",
+                                  flexShrink: 0
+                                }}
+                              >
+                                <SymbolIcon icon={room.icon ?? "home"} />
+                              </Box>
+                              <Typography variant="h5">{room.name}</Typography>
+                            </Stack>
+
+                            <Stack spacing={1.5}>
+                              {groupedStorageLocations.map(({ storageLocation, items: groupedItems }) => (
+                                <Card key={storageLocation.id} variant="outlined">
+                                  <CardContent>
+                                    <Stack spacing={1.5}>
+                                      <Stack
+                                        direction={{ xs: "column", sm: "row" }}
+                                        spacing={1}
+                                        alignItems={{ sm: "center" }}
+                                        justifyContent="space-between"
+                                      >
+                                        <Stack direction="row" spacing={1} alignItems="center" minWidth={0}>
+                                          <Box
+                                            sx={{
+                                              display: "grid",
+                                              placeItems: "center",
+                                              width: 34,
+                                              height: 34,
+                                              borderRadius: 2,
+                                              bgcolor: "action.hover",
+                                              flexShrink: 0
+                                            }}
+                                          >
+                                            <SymbolIcon icon={getStorageIcon(storageLocation.type)} />
+                                          </Box>
+                                          <Box sx={{ minWidth: 0 }}>
+                                            <Typography fontWeight={700}>{storageLocation.name}</Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                              {storageLocation.type} · {groupedItems.length} Gegenstände
+                                            </Typography>
+                                          </Box>
+                                        </Stack>
+                                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                          <Button
+                                            size="small"
+                                            startIcon={<SymbolIcon icon="add" />}
+                                            onClick={() => openItemDialog(undefined, storageLocation.id)}
+                                          >
+                                            Hinzufügen
+                                          </Button>
+                                          <Button
+                                            size="small"
+                                            onClick={() => navigateToStorageLocation(storageLocation.id)}
+                                          >
+                                            Öffnen
+                                          </Button>
+                                        </Stack>
+                                      </Stack>
+
+                                      <Stack spacing={1.5}>
+                                        {groupedItems.map((item) => renderItemCard(item))}
+                                      </Stack>
+                                    </Stack>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </Stack>
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+                      <CardContent>
+                        <Typography color="text.secondary">
+                          Es sind aktuell noch keine Gegenstände im Gesamtbestand vorhanden.
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  )}
+                </Stack>
               ) : null}
 
               {viewMode === "hinweise" && alerts ? (
@@ -1414,89 +1617,7 @@ export function App({ mode, onModeChange }: AppProps) {
                         </Button>
                       </Stack>
                       <Stack spacing={1.5}>
-                        {visibleItems.map((item) => (
-                          <Card key={item.id} variant="outlined">
-                            <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
-                              <Stack
-                                direction={{ xs: "column", md: "row" }}
-                                spacing={1.5}
-                                justifyContent="space-between"
-                                alignItems={{ md: "center" }}
-                              >
-                                <Box sx={{ minWidth: 0, flex: 1 }}>
-                                  <Typography variant="subtitle1" fontWeight={700}>
-                                    {item.name}
-                                  </Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {formatQuantity(item.quantity)} {item.unit}
-                                    {item.category ? ` · ${item.category}` : ""}
-                                  </Typography>
-                                  <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
-                                    {item.minimumQuantity != null ? (
-                                      <Chip
-                                        size="small"
-                                        color={item.quantity <= item.minimumQuantity ? "warning" : "default"}
-                                        label={`Mindestmenge: ${formatQuantity(item.minimumQuantity)} ${item.unit}`}
-                                      />
-                                    ) : null}
-                                    {item.expirationDate ? (
-                                      <Chip size="small" label={`MHD: ${formatDate(item.expirationDate)}`} />
-                                    ) : null}
-                                  </Stack>
-                                  {item.notes ? (
-                                    <Typography mt={0.75} variant="body2" color="text.secondary">
-                                      {item.notes}
-                                    </Typography>
-                                  ) : null}
-                                </Box>
-
-                                <Stack
-                                  direction="row"
-                                  spacing={0.75}
-                                  alignItems="center"
-                                  flexWrap="wrap"
-                                  justifyContent={{ md: "flex-end" }}
-                                >
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => mutateItem(item.id, "decrease", { amount: 1 })}
-                                  >
-                                    -
-                                  </Button>
-                                  <Button
-                                    variant="contained"
-                                    size="small"
-                                    onClick={() => mutateItem(item.id, "increase", { amount: 1 })}
-                                  >
-                                    +
-                                  </Button>
-                                  <IconButton
-                                    size="small"
-                                    aria-label={`${item.name} bearbeiten`}
-                                    onClick={() => openItemDialog(item)}
-                                  >
-                                    <SymbolIcon icon="edit" />
-                                  </IconButton>
-                                  <IconButton
-                                    size="small"
-                                    aria-label={`${item.name} verschieben`}
-                                    onClick={() => openMoveDialog(item)}
-                                  >
-                                    <SymbolIcon icon="forward" />
-                                  </IconButton>
-                                  <IconButton
-                                    size="small"
-                                    aria-label={`${item.name} löschen`}
-                                    onClick={() => deleteEntity("item", item)}
-                                  >
-                                    <SymbolIcon icon="delete" />
-                                  </IconButton>
-                                </Stack>
-                              </Stack>
-                            </CardContent>
-                          </Card>
-                        ))}
+                        {visibleItems.map((item) => renderItemCard(item))}
                         {!selectedStorageLocation || visibleItems.length === 0 ? (
                           <Typography color="text.secondary">
                             {!selectedStorageLocation
