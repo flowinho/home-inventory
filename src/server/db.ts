@@ -23,12 +23,23 @@ function getDatabase(): Database.Database {
   return db;
 }
 
+function ensureColumn(tableName: string, columnName: string, definition: string) {
+  const columns = getDatabase()
+    .prepare<{ name: string }[], { name: string }>(`PRAGMA table_info(${tableName})`)
+    .all();
+  const hasColumn = columns.some((column) => column.name === columnName);
+  if (!hasColumn) {
+    getDatabase().exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+  }
+}
+
 function initSchema() {
   const database = getDatabase();
   database.exec(`
     CREATE TABLE IF NOT EXISTS rooms (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
+      icon TEXT,
       description TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL
@@ -60,6 +71,7 @@ function initSchema() {
       FOREIGN KEY (storageLocationId) REFERENCES storage_locations(id) ON DELETE CASCADE
     );
   `);
+  ensureColumn("rooms", "icon", "TEXT");
 }
 
 export async function initializeDatabase(path: string) {

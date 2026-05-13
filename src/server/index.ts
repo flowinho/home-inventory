@@ -236,6 +236,8 @@ function buildAlerts() {
   const now = new Date();
   const inSevenDays = new Date(now);
   inSevenDays.setDate(now.getDate() + 7);
+  const inThreeDays = new Date(now);
+  inThreeDays.setDate(now.getDate() + 3);
 
   const depleted = items.filter((item) => Number(item.quantity) <= 0);
   const lowStock = items.filter((item) => {
@@ -249,8 +251,15 @@ function buildAlerts() {
     const date = new Date(item.expirationDate);
     return !Number.isNaN(date.valueOf()) && date >= now && date <= inSevenDays;
   });
+  const bddSoon = items.filter((item) => {
+    if (!item.expirationDate) {
+      return false;
+    }
+    const date = new Date(item.expirationDate);
+    return !Number.isNaN(date.valueOf()) && date >= now && date <= inThreeDays;
+  });
 
-  return { depleted, lowStock, expiringSoon };
+  return { depleted, lowStock, expiringSoon, bddSoon };
 }
 
 app.get("/api/meta", (_request, response) => {
@@ -389,11 +398,12 @@ app.post("/api/rooms", (request, response) => {
     const now = touchTimestamp();
     const id = insertAndGetId(
       `
-        INSERT INTO rooms (name, description, createdAt, updatedAt)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO rooms (name, icon, description, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?)
       `,
       [
         requireString(request.body.name, "Raumname"),
+        normalizeOptionalString(request.body.icon),
         normalizeOptionalString(request.body.description),
         now,
         now
@@ -413,11 +423,12 @@ app.put("/api/rooms/:id", (request, response) => {
     const result = runAndPersist(
       `
         UPDATE rooms
-        SET name = ?, description = ?, updatedAt = ?
+        SET name = ?, icon = ?, description = ?, updatedAt = ?
         WHERE id = ? AND updatedAt = ?
       `,
       [
         requireString(request.body.name, "Raumname"),
+        normalizeOptionalString(request.body.icon),
         normalizeOptionalString(request.body.description),
         updatedAt,
         roomId,

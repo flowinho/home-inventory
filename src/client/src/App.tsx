@@ -37,11 +37,12 @@ import type {
   InventoryItem,
   ItemUnit,
   ItemWithLocation,
+  RoomIcon,
   RoomSummary,
   StorageLocationSummary,
   ThemeMode
 } from "../../shared/models";
-import { ITEM_UNITS, STORAGE_TYPES } from "../../shared/models";
+import { ITEM_UNITS, ROOM_ICONS, STORAGE_TYPES } from "../../shared/models";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { SymbolIcon } from "./components/SymbolIcon";
 import { formatDate, formatDateTime, formatQuantity } from "./utils/format";
@@ -57,6 +58,7 @@ type RoomFormState = {
   id?: number;
   updatedAt?: string;
   name: string;
+  icon: string;
   description: string;
 };
 
@@ -80,6 +82,13 @@ type ItemFormState = {
   minimumQuantity: string;
   expirationDate: string;
   notes: string;
+};
+
+type MoveItemState = {
+  id: number;
+  name: string;
+  currentStorageLocationId: number;
+  targetStorageLocationId: number;
 };
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -121,7 +130,7 @@ function getStorageIcon(type: string) {
 }
 
 function emptyRoomForm(): RoomFormState {
-  return { name: "", description: "" };
+  return { name: "", icon: "home", description: "" };
 }
 
 function emptyStorageForm(roomId?: number): StorageFormState {
@@ -161,9 +170,11 @@ export function App({ mode, onModeChange }: AppProps) {
   const [roomDialogOpen, setRoomDialogOpen] = React.useState(false);
   const [storageDialogOpen, setStorageDialogOpen] = React.useState(false);
   const [itemDialogOpen, setItemDialogOpen] = React.useState(false);
+  const [moveDialogOpen, setMoveDialogOpen] = React.useState(false);
   const [roomForm, setRoomForm] = React.useState<RoomFormState>(emptyRoomForm());
   const [storageForm, setStorageForm] = React.useState<StorageFormState>(emptyStorageForm());
   const [itemForm, setItemForm] = React.useState<ItemFormState>(emptyItemForm());
+  const [moveItemState, setMoveItemState] = React.useState<MoveItemState | null>(null);
   const [confirmState, setConfirmState] = React.useState<{
     title: string;
     message: string;
@@ -253,6 +264,7 @@ export function App({ mode, onModeChange }: AppProps) {
             id: room.id,
             updatedAt: room.updatedAt,
             name: room.name,
+            icon: room.icon ?? "home",
             description: room.description ?? ""
           }
         : emptyRoomForm()
@@ -395,6 +407,41 @@ export function App({ mode, onModeChange }: AppProps) {
       await refreshData();
     } catch (mutationError) {
       setError((mutationError as Error).message);
+    }
+  };
+
+  const openMoveDialog = (item: ItemWithLocation) => {
+    setMoveItemState({
+      id: item.id,
+      name: item.name,
+      currentStorageLocationId: item.storageLocationId,
+      targetStorageLocationId: item.storageLocationId
+    });
+    setMoveDialogOpen(true);
+  };
+
+  const submitMoveItem = async () => {
+    if (!moveItemState) {
+      return;
+    }
+
+    try {
+      await request(`/api/items/${moveItemState.id}/move`, {
+        method: "POST",
+        body: JSON.stringify({ storageLocationId: moveItemState.targetStorageLocationId })
+      });
+      setMoveDialogOpen(false);
+      setSelectedStorageId(moveItemState.targetStorageLocationId);
+      const targetStorage = storageLocations.find(
+        (storageLocation) => storageLocation.id === moveItemState.targetStorageLocationId
+      );
+      if (targetStorage) {
+        setSelectedRoomId(targetStorage.roomId);
+      }
+      setMoveItemState(null);
+      await refreshData();
+    } catch (moveError) {
+      setError((moveError as Error).message);
     }
   };
 
@@ -765,6 +812,7 @@ export function App({ mode, onModeChange }: AppProps) {
                         color="primary"
                         variant="filled"
                         label={`Raum: ${selectedRoom?.name ?? "Nicht gewählt"}`}
+                        icon={<SymbolIcon icon={selectedRoom?.icon ?? "home"} />}
                       />
                       <Chip
                         color="secondary"
@@ -828,10 +876,11 @@ export function App({ mode, onModeChange }: AppProps) {
                   <Grid container spacing={2}>
                     {[
                       { title: "Niedriger Bestand", data: alerts.lowStock, icon: "warning" },
+                      { title: "MHD in 3 Tagen", data: alerts.bddSoon, icon: "schedule" },
                       { title: "Bald ablaufend", data: alerts.expiringSoon, icon: "event_busy" },
                       { title: "Aufgebraucht", data: alerts.depleted, icon: "remove_shopping_cart" }
                     ].map((section) => (
-                      <Grid key={section.title} size={{ xs: 12, md: 4 }}>
+                      <Grid key={section.title} size={{ xs: 12, md: 6, xl: 3 }}>
                         <Card sx={{ height: "100%", border: "1px solid", borderColor: "divider" }}>
                           <CardContent>
                             <Stack direction="row" spacing={1} alignItems="center" mb={1.5}>
@@ -1039,6 +1088,18 @@ export function App({ mode, onModeChange }: AppProps) {
                                 <Stack direction="row" justifyContent="space-between" alignItems="start">
                                   <Box>
                                     <Stack direction="row" spacing={1} alignItems="center">
+                                      <Box
+                                        sx={{
+                                          display: "grid",
+                                          placeItems: "center",
+                                          width: 32,
+                                          height: 32,
+                                          borderRadius: 2,
+                                          bgcolor: "action.hover"
+                                        }}
+                                      >
+                                        <SymbolIcon icon={room.icon ?? "home"} />
+                                      </Box>
                                       <Typography variant="h6">{room.name}</Typography>
                                       {selectedRoomId === room.id ? (
                                         <Chip size="small" color="primary" label="Aktiver Raum" />
@@ -1243,7 +1304,7 @@ export function App({ mode, onModeChange }: AppProps) {
                                       </IconButton>
                                       <IconButton
                                         aria-label={`${item.name} verschieben`}
-                                        onClick={() => openItemDialog(item)}
+                                        onClick={() => openMoveDialog(item)}
                                       >
                                         <SymbolIcon icon="forward" />
                                       </IconButton>
@@ -1333,6 +1394,23 @@ export function App({ mode, onModeChange }: AppProps) {
               value={roomForm.name}
               onChange={(event) => setRoomForm((current) => ({ ...current, name: event.target.value }))}
             />
+            <TextField
+              select
+              label="Raum-Icon"
+              value={roomForm.icon}
+              onChange={(event) =>
+                setRoomForm((current) => ({ ...current, icon: event.target.value as RoomIcon }))
+              }
+            >
+              {ROOM_ICONS.map((icon) => (
+                <MenuItem key={icon} value={icon}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <SymbolIcon icon={icon} />
+                    <span>{icon}</span>
+                  </Stack>
+                </MenuItem>
+              ))}
+            </TextField>
             <TextField
               label="Beschreibung"
               multiline
@@ -1555,6 +1633,59 @@ export function App({ mode, onModeChange }: AppProps) {
           <Button onClick={() => setItemDialogOpen(false)}>Abbrechen</Button>
           <Button variant="contained" onClick={submitItem} disabled={submitting}>
             Speichern
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={moveDialogOpen} onClose={() => setMoveDialogOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Gegenstand verschieben</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} pt={1}>
+            <Typography color="text.secondary">
+              {moveItemState ? `${moveItemState.name} an einen anderen Aufbewahrungsort verschieben.` : ""}
+            </Typography>
+            <TextField
+              select
+              label="Ziel-Aufbewahrungsort"
+              value={moveItemState?.targetStorageLocationId ?? ""}
+              onChange={(event) =>
+                setMoveItemState((current) =>
+                  current
+                    ? {
+                        ...current,
+                        targetStorageLocationId: Number(event.target.value)
+                      }
+                    : current
+                )
+              }
+            >
+              {storageLocations.map((storageLocation) => {
+                const room = rooms.find((candidate) => candidate.id === storageLocation.roomId);
+                return (
+                  <MenuItem
+                    key={storageLocation.id}
+                    value={storageLocation.id}
+                    disabled={storageLocation.id === moveItemState?.currentStorageLocationId}
+                  >
+                    {room?.name ? `${room.name} / ` : ""}
+                    {storageLocation.name}
+                  </MenuItem>
+                );
+              })}
+            </TextField>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMoveDialogOpen(false)}>Abbrechen</Button>
+          <Button
+            variant="contained"
+            onClick={() => void submitMoveItem()}
+            disabled={
+              !moveItemState ||
+              moveItemState.targetStorageLocationId === moveItemState.currentStorageLocationId
+            }
+          >
+            Verschieben
           </Button>
         </DialogActions>
       </Dialog>

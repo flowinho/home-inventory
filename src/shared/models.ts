@@ -22,14 +22,29 @@ export const ITEM_UNITS = [
   "ml"
 ] as const;
 
+export const ROOM_ICONS = [
+  "kitchen",
+  "weekend",
+  "bed",
+  "bathtub",
+  "garage_home",
+  "local_laundry_service",
+  "desk",
+  "chair",
+  "stairs_2",
+  "home"
+] as const;
+
 export type StorageType = (typeof STORAGE_TYPES)[number];
 export type ItemUnit = (typeof ITEM_UNITS)[number];
+export type RoomIcon = (typeof ROOM_ICONS)[number];
 
 export type ThemeMode = "light" | "dark";
 
 export interface Room {
   id: number;
   name: string;
+  icon: string | null;
   description: string | null;
   createdAt: string;
   updatedAt: string;
@@ -88,6 +103,7 @@ export interface DashboardResponse {
 export interface AlertOverview {
   lowStock: ItemWithLocation[];
   expiringSoon: ItemWithLocation[];
+  bddSoon: ItemWithLocation[];
   depleted: ItemWithLocation[];
 }
 
