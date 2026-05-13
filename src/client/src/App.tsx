@@ -1095,26 +1095,28 @@ export function App({ mode, onModeChange }: AppProps) {
               ) : null}
 
               {viewMode === "uebersicht" ? (
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, lg: 4 }}>
-                    <Card sx={{ border: "1px solid", borderColor: "divider" }}>
-                      <CardContent>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                          <Typography variant="h5">Räume</Typography>
-                          <Button
-                            size="small"
-                            startIcon={<SymbolIcon icon="add" />}
-                            onClick={() => openRoomDialog()}
-                          >
-                            Hinzufügen
-                          </Button>
-                        </Stack>
-                        <Stack spacing={1.5}>
+                <Stack spacing={2}>
+                  <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+                    <CardContent>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                        <Typography variant="h5">Räume</Typography>
+                        <Button
+                          size="small"
+                          startIcon={<SymbolIcon icon="add" />}
+                          onClick={() => openRoomDialog()}
+                        >
+                          Hinzufügen
+                        </Button>
+                      </Stack>
+                      <Box sx={{ overflowX: "auto", pb: 0.5 }}>
+                        <Stack direction="row" spacing={1.5} minWidth="max-content">
                           {rooms.map((room) => (
                             <Card
                               key={room.id}
                               variant={selectedRoomId === room.id ? "elevation" : "outlined"}
                               sx={{
+                                minWidth: { xs: 240, md: 280 },
+                                maxWidth: { xs: 240, md: 320 },
                                 cursor: "pointer",
                                 borderWidth: selectedRoomId === room.id ? 2 : 1,
                                 borderColor: selectedRoomId === room.id ? "primary.main" : "divider",
@@ -1144,13 +1146,15 @@ export function App({ mode, onModeChange }: AppProps) {
                                         <SymbolIcon icon={room.icon ?? "home"} />
                                       </Box>
                                       <Typography variant="h6">{room.name}</Typography>
-                                      {selectedRoomId === room.id ? (
-                                        <Chip size="small" color="primary" label="Aktiver Raum" />
-                                      ) : null}
                                     </Stack>
-                                    <Typography color="text.secondary">
+                                    <Typography mt={0.5} color="text.secondary">
                                       {room.storageCount} Aufbewahrungsorte · {room.itemCount} Gegenstände
                                     </Typography>
+                                    {room.description ? (
+                                      <Typography mt={1.5} variant="body2" color="text.secondary">
+                                        {room.description}
+                                      </Typography>
+                                    ) : null}
                                   </Box>
                                   <Stack direction="row" spacing={0.5}>
                                     <IconButton
@@ -1173,193 +1177,170 @@ export function App({ mode, onModeChange }: AppProps) {
                                     </IconButton>
                                   </Stack>
                                 </Stack>
-                                {room.description ? (
-                                  <Typography mt={1.5} variant="body2" color="text.secondary">
-                                    {room.description}
-                                  </Typography>
+                                {selectedRoomId === room.id ? (
+                                  <Chip sx={{ mt: 1.5 }} size="small" color="primary" label="Aktiver Raum" />
                                 ) : null}
                               </CardContent>
                             </Card>
                           ))}
                         </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+                      </Box>
+                    </CardContent>
+                  </Card>
 
-                  <Grid size={{ xs: 12, lg: 4 }}>
-                    <Card sx={{ border: "1px solid", borderColor: "divider" }}>
-                      <CardContent>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                          <Box>
-                            <Typography variant="h5">
-                              {selectedRoom ? `Aufbewahrungsorte in ${selectedRoom.name}` : "Aufbewahrungsorte"}
-                            </Typography>
-                            <Typography color="text.secondary">
-                              Tippe auf einen Ort, um den Bestand rechts zu sehen.
-                            </Typography>
-                          </Box>
-                          <Button
-                            size="small"
-                            startIcon={<SymbolIcon icon="add" />}
-                            onClick={() => openStorageDialog(undefined, selectedRoomId ?? undefined)}
-                          >
-                            Hinzufügen
-                          </Button>
-                        </Stack>
-                        <Stack spacing={1.5}>
-                          {visibleStorageLocations.map((storageLocation) => (
-                            <Card
-                              key={storageLocation.id}
-                              variant={selectedStorageId === storageLocation.id ? "elevation" : "outlined"}
-                              sx={{
-                                cursor: "pointer",
-                                borderWidth: selectedStorageId === storageLocation.id ? 2 : 1,
-                                borderColor:
-                                  selectedStorageId === storageLocation.id ? "secondary.main" : "divider",
-                                bgcolor:
-                                  selectedStorageId === storageLocation.id
-                                    ? "rgba(184, 92, 0, 0.10)"
-                                    : "background.paper",
-                                boxShadow:
-                                  selectedStorageId === storageLocation.id
-                                    ? "0 14px 28px rgba(184, 92, 0, 0.14)"
-                                    : undefined
-                              }}
-                              onClick={() => setSelectedStorageId(storageLocation.id)}
-                            >
-                              <CardContent sx={{ pb: "16px !important" }}>
-                                <Stack direction="row" justifyContent="space-between" spacing={1.5}>
-                                  <Stack direction="row" spacing={1.5} alignItems="center">
-                                    <Box
-                                      sx={{
-                                        display: "grid",
-                                        placeItems: "center",
-                                        width: 42,
-                                        height: 42,
-                                        borderRadius: 3,
-                                        bgcolor: "action.hover"
-                                      }}
-                                    >
-                                      <SymbolIcon icon={getStorageIcon(storageLocation.type)} />
-                                    </Box>
-                                    <Box>
-                                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                                        <Typography fontWeight={700}>{storageLocation.name}</Typography>
-                                        {selectedStorageId === storageLocation.id ? (
-                                          <Chip size="small" color="secondary" label="Aktiver Ort" />
-                                        ) : null}
-                                      </Stack>
-                                      <Typography color="text.secondary">
-                                        {storageLocation.type} · {storageLocation.itemCount} Gegenstände
-                                      </Typography>
-                                    </Box>
-                                  </Stack>
-                                  <Stack direction="row" spacing={0.5}>
-                                    <IconButton
-                                      aria-label={`${storageLocation.name} bearbeiten`}
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        openStorageDialog(storageLocation);
-                                      }}
-                                    >
-                                      <SymbolIcon icon="edit" />
-                                    </IconButton>
-                                    <IconButton
-                                      aria-label={`Gegenstand in ${storageLocation.name} hinzufügen`}
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        openItemDialog(undefined, storageLocation.id);
-                                      }}
-                                    >
-                                      <SymbolIcon icon="playlist_add" />
-                                    </IconButton>
-                                  </Stack>
-                                </Stack>
-                                <Stack direction="row" spacing={1} flexWrap="wrap" mt={1.5}>
-                                  {storageLocation.previewItems.map((previewItem) => (
-                                    <Chip
-                                      key={previewItem.id}
-                                      label={`${previewItem.name} · ${formatQuantity(previewItem.quantity)} ${previewItem.unit}`}
-                                      size="small"
-                                      variant="outlined"
-                                    />
-                                  ))}
-                                  {storageLocation.previewItems.length === 0 ? (
-                                    <Typography variant="body2" color="text.secondary">
-                                      Noch keine Gegenstände vorhanden.
-                                    </Typography>
-                                  ) : null}
-                                </Stack>
-                              </CardContent>
-                            </Card>
-                          ))}
-                          {!selectedRoom || visibleStorageLocations.length === 0 ? (
-                            <Typography color="text.secondary">
-                              Für diesen Raum gibt es noch keine Aufbewahrungsorte.
-                            </Typography>
-                          ) : null}
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-
-                  <Grid size={{ xs: 12, lg: 4 }}>
-                    <Card sx={{ border: "1px solid", borderColor: "divider" }}>
-                      <CardContent>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                          <Box>
-                            <Typography variant="h5">
-                              {selectedStorageLocation
-                                ? `Bestand in ${selectedStorageLocation.name}`
-                                : "Bestand"}
-                            </Typography>
-                            <Typography color="text.secondary">
-                              Mengen können direkt mit `+` und `-` angepasst werden.
-                            </Typography>
-                          </Box>
-                          <Button
-                            size="small"
-                            startIcon={<SymbolIcon icon="add" />}
-                            onClick={() => openItemDialog(undefined, selectedStorageId ?? undefined)}
-                          >
-                            Hinzufügen
-                          </Button>
-                        </Stack>
-                        <Stack spacing={1.5}>
-                          {visibleItems.map((item) => (
-                            <Card key={item.id} variant="outlined">
-                              <CardContent sx={{ pb: "16px !important" }}>
-                                <Stack spacing={1.5}>
+                  <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+                    <CardContent>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                        <Box>
+                          <Typography variant="h5">
+                            {selectedRoom ? `Aufbewahrungsorte in ${selectedRoom.name}` : "Aufbewahrungsorte"}
+                          </Typography>
+                          <Typography color="text.secondary">
+                            Tippe auf einen Ort, um den Bestand darunter zu sehen.
+                          </Typography>
+                        </Box>
+                        <Button
+                          size="small"
+                          startIcon={<SymbolIcon icon="add" />}
+                          onClick={() => openStorageDialog(undefined, selectedRoomId ?? undefined)}
+                        >
+                          Hinzufügen
+                        </Button>
+                      </Stack>
+                      {selectedRoom && visibleStorageLocations.length > 0 ? (
+                        <Box sx={{ overflowX: "auto", pb: 0.5 }}>
+                          <Stack direction="row" spacing={1.5} minWidth="max-content">
+                            {visibleStorageLocations.map((storageLocation) => (
+                              <Card
+                                key={storageLocation.id}
+                                variant={selectedStorageId === storageLocation.id ? "elevation" : "outlined"}
+                                sx={{
+                                  minWidth: { xs: 260, md: 320 },
+                                  maxWidth: { xs: 260, md: 360 },
+                                  cursor: "pointer",
+                                  borderWidth: selectedStorageId === storageLocation.id ? 2 : 1,
+                                  borderColor:
+                                    selectedStorageId === storageLocation.id ? "secondary.main" : "divider",
+                                  bgcolor:
+                                    selectedStorageId === storageLocation.id
+                                      ? "rgba(184, 92, 0, 0.10)"
+                                      : "background.paper",
+                                  boxShadow:
+                                    selectedStorageId === storageLocation.id
+                                      ? "0 14px 28px rgba(184, 92, 0, 0.14)"
+                                      : undefined
+                                }}
+                                onClick={() => setSelectedStorageId(storageLocation.id)}
+                              >
+                                <CardContent sx={{ pb: "16px !important" }}>
                                   <Stack direction="row" justifyContent="space-between" spacing={1.5}>
-                                    <Box>
-                                      <Typography variant="h6">{item.name}</Typography>
-                                      <Typography color="text.secondary">
-                                        {formatQuantity(item.quantity)} {item.unit}
-                                        {item.category ? ` · ${item.category}` : ""}
-                                      </Typography>
-                                    </Box>
+                                    <Stack direction="row" spacing={1.5} alignItems="center">
+                                      <Box
+                                        sx={{
+                                          display: "grid",
+                                          placeItems: "center",
+                                          width: 42,
+                                          height: 42,
+                                          borderRadius: 3,
+                                          bgcolor: "action.hover"
+                                        }}
+                                      >
+                                        <SymbolIcon icon={getStorageIcon(storageLocation.type)} />
+                                      </Box>
+                                      <Box>
+                                        <Typography fontWeight={700}>{storageLocation.name}</Typography>
+                                        <Typography color="text.secondary">
+                                          {storageLocation.type} · {storageLocation.itemCount} Gegenstände
+                                        </Typography>
+                                      </Box>
+                                    </Stack>
                                     <Stack direction="row" spacing={0.5}>
                                       <IconButton
-                                        aria-label={`${item.name} bearbeiten`}
-                                        onClick={() => openItemDialog(item)}
+                                        aria-label={`${storageLocation.name} bearbeiten`}
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          openStorageDialog(storageLocation);
+                                        }}
                                       >
                                         <SymbolIcon icon="edit" />
                                       </IconButton>
                                       <IconButton
-                                        aria-label={`${item.name} verschieben`}
-                                        onClick={() => openMoveDialog(item)}
+                                        aria-label={`Gegenstand in ${storageLocation.name} hinzufügen`}
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          openItemDialog(undefined, storageLocation.id);
+                                        }}
                                       >
-                                        <SymbolIcon icon="forward" />
-                                      </IconButton>
-                                      <IconButton
-                                        aria-label={`${item.name} löschen`}
-                                        onClick={() => deleteEntity("item", item)}
-                                      >
-                                        <SymbolIcon icon="delete" />
+                                        <SymbolIcon icon="playlist_add" />
                                       </IconButton>
                                     </Stack>
                                   </Stack>
-                                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                                  <Stack direction="row" spacing={1} flexWrap="wrap" mt={1.5}>
+                                    {storageLocation.previewItems.map((previewItem) => (
+                                      <Chip
+                                        key={previewItem.id}
+                                        label={`${previewItem.name} · ${formatQuantity(previewItem.quantity)} ${previewItem.unit}`}
+                                        size="small"
+                                        variant="outlined"
+                                      />
+                                    ))}
+                                  </Stack>
+                                  {selectedStorageId === storageLocation.id ? (
+                                    <Chip sx={{ mt: 1.5 }} size="small" color="secondary" label="Aktiver Ort" />
+                                  ) : null}
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </Stack>
+                        </Box>
+                      ) : (
+                        <Typography color="text.secondary">
+                          {!selectedRoom
+                            ? "Wähle zuerst einen Raum aus."
+                            : "Für diesen Raum gibt es noch keine Aufbewahrungsorte."}
+                        </Typography>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+                    <CardContent>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                        <Box>
+                          <Typography variant="h5">
+                            {selectedStorageLocation
+                              ? `Bestand in ${selectedStorageLocation.name}`
+                              : "Bestand"}
+                          </Typography>
+                          <Typography color="text.secondary">
+                            Mengen können direkt mit `+` und `-` angepasst werden.
+                          </Typography>
+                        </Box>
+                        <Button
+                          size="small"
+                          startIcon={<SymbolIcon icon="add" />}
+                          onClick={() => openItemDialog(undefined, selectedStorageId ?? undefined)}
+                        >
+                          Hinzufügen
+                        </Button>
+                      </Stack>
+                      <Stack spacing={1.5}>
+                        {visibleItems.map((item) => (
+                          <Card key={item.id} variant="outlined">
+                            <CardContent sx={{ pb: "16px !important" }}>
+                              <Stack
+                                direction={{ xs: "column", lg: "row" }}
+                                spacing={2}
+                                justifyContent="space-between"
+                                alignItems={{ lg: "center" }}
+                              >
+                                <Box sx={{ minWidth: 0, flex: 1 }}>
+                                  <Typography variant="h6">{item.name}</Typography>
+                                  <Typography color="text.secondary">
+                                    {formatQuantity(item.quantity)} {item.unit}
+                                    {item.category ? ` · ${item.category}` : ""}
+                                  </Typography>
+                                  <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
                                     {item.minimumQuantity != null ? (
                                       <Chip
                                         size="small"
@@ -1372,46 +1353,70 @@ export function App({ mode, onModeChange }: AppProps) {
                                     ) : null}
                                   </Stack>
                                   {item.notes ? (
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography mt={1} variant="body2" color="text.secondary">
                                       {item.notes}
                                     </Typography>
                                   ) : null}
-                                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                                    <Button
-                                      variant="outlined"
-                                      size="small"
-                                      onClick={() => mutateItem(item.id, "decrease", { amount: 1 })}
-                                    >
-                                      -
-                                    </Button>
-                                    <Button
-                                      variant="contained"
-                                      size="small"
-                                      onClick={() => mutateItem(item.id, "increase", { amount: 1 })}
-                                    >
-                                      +
-                                    </Button>
-                                    <Button
-                                      size="small"
-                                      onClick={() => mutateItem(item.id, "consume")}
-                                    >
-                                      Entnehmen
-                                    </Button>
-                                  </Stack>
+                                </Box>
+
+                                <Stack
+                                  direction={{ xs: "column", sm: "row" }}
+                                  spacing={1}
+                                  alignItems={{ xs: "stretch", sm: "center" }}
+                                  flexWrap="wrap"
+                                  justifyContent={{ sm: "flex-end" }}
+                                >
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => mutateItem(item.id, "decrease", { amount: 1 })}
+                                  >
+                                    -
+                                  </Button>
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={() => mutateItem(item.id, "increase", { amount: 1 })}
+                                  >
+                                    +
+                                  </Button>
+                                  <Button size="small" onClick={() => mutateItem(item.id, "consume")}>
+                                    Entnehmen
+                                  </Button>
+                                  <IconButton
+                                    aria-label={`${item.name} bearbeiten`}
+                                    onClick={() => openItemDialog(item)}
+                                  >
+                                    <SymbolIcon icon="edit" />
+                                  </IconButton>
+                                  <IconButton
+                                    aria-label={`${item.name} verschieben`}
+                                    onClick={() => openMoveDialog(item)}
+                                  >
+                                    <SymbolIcon icon="forward" />
+                                  </IconButton>
+                                  <IconButton
+                                    aria-label={`${item.name} löschen`}
+                                    onClick={() => deleteEntity("item", item)}
+                                  >
+                                    <SymbolIcon icon="delete" />
+                                  </IconButton>
                                 </Stack>
-                              </CardContent>
-                            </Card>
-                          ))}
-                          {!selectedStorageLocation || visibleItems.length === 0 ? (
-                            <Typography color="text.secondary">
-                              Für diesen Aufbewahrungsort gibt es noch keine Gegenstände.
-                            </Typography>
-                          ) : null}
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
+                              </Stack>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        {!selectedStorageLocation || visibleItems.length === 0 ? (
+                          <Typography color="text.secondary">
+                            {!selectedStorageLocation
+                              ? "Wähle zuerst einen Aufbewahrungsort aus."
+                              : "Für diesen Aufbewahrungsort gibt es noch keine Gegenstände."}
+                          </Typography>
+                        ) : null}
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Stack>
               ) : null}
             </>
           ) : null}
