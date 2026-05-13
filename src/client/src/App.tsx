@@ -756,7 +756,7 @@ export function App({ mode, onModeChange }: AppProps) {
 
           {!loading && dashboard ? (
             <>
-              {alerts && alerts.expiringSoon.length > 0 ? (
+              {alerts && alerts.bddSoon.length > 0 ? (
                 <Card
                   sx={{
                     border: "1px solid",
@@ -783,7 +783,7 @@ export function App({ mode, onModeChange }: AppProps) {
                         <Stack direction="row" spacing={0.75} alignItems="center">
                           <Chip
                             size="small"
-                            label={`${alerts.expiringSoon.length}`}
+                            label={`${alerts.bddSoon.length}`}
                             sx={{
                               bgcolor: "rgba(255,255,255,0.16)",
                               color: "inherit",
@@ -799,7 +799,7 @@ export function App({ mode, onModeChange }: AppProps) {
                             Diese Artikel nähern sich ihrem MHD und sollten bald geprüft werden.
                           </Typography>
                           <Stack spacing={1}>
-                            {alerts.expiringSoon.slice(0, 6).map((item) => (
+                            {alerts.bddSoon.slice(0, 6).map((item) => (
                               <Box key={item.id}>
                                 <Typography fontWeight={600}>
                                   {item.name} · {formatQuantity(item.quantity)} {item.unit}
