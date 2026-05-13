@@ -841,8 +841,10 @@ export function App({ mode, onModeChange }: AppProps) {
                 <Card
                   sx={{
                     border: "1px solid",
-                    borderColor: "#ef9a9a",
-                    bgcolor: "#fdecec"
+                    borderColor: "error.main",
+                    bgcolor: "error.main",
+                    color: "error.contrastText",
+                    opacity: 0.88
                   }}
                 >
                   <CardContent>
@@ -851,7 +853,7 @@ export function App({ mode, onModeChange }: AppProps) {
                         <SymbolIcon icon="event_busy" />
                         <Typography variant="h5">Bald ablaufend</Typography>
                       </Stack>
-                      <Typography color="text.secondary">
+                      <Typography sx={{ color: "inherit", opacity: 0.92 }}>
                         Diese Artikel nähern sich ihrem MHD und sollten bald geprüft werden.
                       </Typography>
                       <Stack spacing={1}>
@@ -860,7 +862,7 @@ export function App({ mode, onModeChange }: AppProps) {
                             <Typography fontWeight={600}>
                               {item.name} · {formatQuantity(item.quantity)} {item.unit}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" sx={{ color: "inherit", opacity: 0.9 }}>
                               {item.roomName} / {item.storageLocationName} · MHD:{" "}
                               {formatDate(item.expirationDate)}
                             </Typography>
@@ -1439,16 +1441,18 @@ export function App({ mode, onModeChange }: AppProps) {
                       <Stack spacing={1.5}>
                         {visibleItems.map((item) => (
                           <Card key={item.id} variant="outlined">
-                            <CardContent sx={{ pb: "16px !important" }}>
+                            <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
                               <Stack
-                                direction={{ xs: "column", lg: "row" }}
-                                spacing={2}
+                                direction={{ xs: "column", md: "row" }}
+                                spacing={1.5}
                                 justifyContent="space-between"
-                                alignItems={{ lg: "center" }}
+                                alignItems={{ md: "center" }}
                               >
                                 <Box sx={{ minWidth: 0, flex: 1 }}>
-                                  <Typography variant="h6">{item.name}</Typography>
-                                  <Typography color="text.secondary">
+                                  <Typography variant="subtitle1" fontWeight={700}>
+                                    {item.name}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
                                     {formatQuantity(item.quantity)} {item.unit}
                                     {item.category ? ` · ${item.category}` : ""}
                                   </Typography>
@@ -1465,18 +1469,18 @@ export function App({ mode, onModeChange }: AppProps) {
                                     ) : null}
                                   </Stack>
                                   {item.notes ? (
-                                    <Typography mt={1} variant="body2" color="text.secondary">
+                                    <Typography mt={0.75} variant="body2" color="text.secondary">
                                       {item.notes}
                                     </Typography>
                                   ) : null}
                                 </Box>
 
                                 <Stack
-                                  direction={{ xs: "column", sm: "row" }}
-                                  spacing={1}
-                                  alignItems={{ xs: "stretch", sm: "center" }}
+                                  direction="row"
+                                  spacing={0.75}
+                                  alignItems="center"
                                   flexWrap="wrap"
-                                  justifyContent={{ sm: "flex-end" }}
+                                  justifyContent={{ md: "flex-end" }}
                                 >
                                   <Button
                                     variant="outlined"
@@ -1496,18 +1500,21 @@ export function App({ mode, onModeChange }: AppProps) {
                                     Entnehmen
                                   </Button>
                                   <IconButton
+                                    size="small"
                                     aria-label={`${item.name} bearbeiten`}
                                     onClick={() => openItemDialog(item)}
                                   >
                                     <SymbolIcon icon="edit" />
                                   </IconButton>
                                   <IconButton
+                                    size="small"
                                     aria-label={`${item.name} verschieben`}
                                     onClick={() => openMoveDialog(item)}
                                   >
                                     <SymbolIcon icon="forward" />
                                   </IconButton>
                                   <IconButton
+                                    size="small"
                                     aria-label={`${item.name} löschen`}
                                     onClick={() => deleteEntity("item", item)}
                                   >
