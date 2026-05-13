@@ -486,7 +486,7 @@ export function App({ mode, onModeChange }: AppProps) {
   return (
     <Box sx={{ pb: 10 }}>
       <AppBar position="sticky" color="transparent" elevation={0}>
-        <Toolbar
+        <Box
           sx={{
             backdropFilter: "blur(18px)",
             bgcolor: "rgba(15, 20, 22, 0.12)",
@@ -494,37 +494,73 @@ export function App({ mode, onModeChange }: AppProps) {
             borderColor: "divider"
           }}
         >
-          <Stack direction="row" spacing={1.5} alignItems="center" flexGrow={1}>
-            <Box
-              sx={{
-                display: "grid",
-                placeItems: "center",
-                width: 44,
-                height: 44,
-                borderRadius: 3,
-                bgcolor: "primary.main",
-                color: "primary.contrastText"
-              }}
-            >
-              <SymbolIcon icon="home_storage" />
-            </Box>
-            <Box>
-              <Typography variant="h6">Hausbestand</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Räume, Vorräte und Bestände lokal verwalten
-              </Typography>
-            </Box>
-          </Stack>
-          <Tooltip title={mode === "dark" ? "Hellen Modus aktivieren" : "Dunklen Modus aktivieren"}>
-            <IconButton
-              color="inherit"
-              aria-label={mode === "dark" ? "Hellen Modus aktivieren" : "Dunklen Modus aktivieren"}
-              onClick={() => onModeChange(mode === "dark" ? "light" : "dark")}
-            >
-              <SymbolIcon icon={mode === "dark" ? "light_mode" : "dark_mode"} />
-            </IconButton>
-          </Tooltip>
-        </Toolbar>
+          <Toolbar>
+            <Stack direction="row" spacing={1.5} alignItems="center" flexGrow={1} minWidth={0}>
+              <Box
+                sx={{
+                  display: "grid",
+                  placeItems: "center",
+                  width: 44,
+                  height: 44,
+                  borderRadius: 3,
+                  bgcolor: "primary.main",
+                  color: "primary.contrastText",
+                  flexShrink: 0
+                }}
+              >
+                <SymbolIcon icon="home_storage" />
+              </Box>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="h6">Hausbestand</Typography>
+                <Typography variant="body2" color="text.secondary" noWrap>
+                  Räume, Vorräte und Bestände lokal verwalten
+                </Typography>
+              </Box>
+            </Stack>
+            <Tooltip title={mode === "dark" ? "Hellen Modus aktivieren" : "Dunklen Modus aktivieren"}>
+              <IconButton
+                color="inherit"
+                aria-label={mode === "dark" ? "Hellen Modus aktivieren" : "Dunklen Modus aktivieren"}
+                onClick={() => onModeChange(mode === "dark" ? "light" : "dark")}
+              >
+                <SymbolIcon icon={mode === "dark" ? "light_mode" : "dark_mode"} />
+              </IconButton>
+            </Tooltip>
+          </Toolbar>
+
+          <Box
+            sx={{
+              px: { xs: 1.5, sm: 2.5 },
+              pb: 1,
+              overflowX: "auto",
+              scrollbarWidth: "thin"
+            }}
+          >
+            <Stack direction="row" spacing={1} minWidth="max-content" alignItems="center">
+              <Chip
+                icon={<SymbolIcon icon="grid_view" />}
+                label="Übersicht"
+                clickable
+                color={viewMode === "uebersicht" ? "primary" : "default"}
+                variant={viewMode === "uebersicht" ? "filled" : "outlined"}
+                onClick={() => setViewMode("uebersicht")}
+              />
+              {rooms.map((room) => (
+                <Chip
+                  key={room.id}
+                  label={room.name}
+                  clickable
+                  color={selectedRoomId === room.id ? "primary" : "default"}
+                  variant={selectedRoomId === room.id ? "filled" : "outlined"}
+                  onClick={() => {
+                    setSelectedRoomId(room.id);
+                    setViewMode("uebersicht");
+                  }}
+                />
+              ))}
+            </Stack>
+          </Box>
+        </Box>
       </AppBar>
 
       <Container maxWidth="xl" sx={{ pt: 3 }}>

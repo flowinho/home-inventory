@@ -15,6 +15,7 @@ Hausbestand ist eine lokale, deutschsprachige Web-App zur Verwaltung von Haushal
 - Tägliche automatische Backups mit Rückspiel-Funktion in der Oberfläche
 - Heller und dunkler Modus mit lokaler Speicherung der Auswahl
 - Material UI Oberfläche mit lokal ausgelieferten Material Symbols
+- Lokales App-Icon und Web-App-Manifest für Android- und iOS-Homescreens
 
 ## Voraussetzungen
 
