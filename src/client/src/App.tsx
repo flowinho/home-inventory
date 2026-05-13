@@ -812,12 +812,55 @@ export function App({ mode, onModeChange }: AppProps) {
                         color="primary"
                         variant="filled"
                         label={`Raum: ${selectedRoom?.name ?? "Nicht gewählt"}`}
-                        icon={<SymbolIcon icon={selectedRoom?.icon ?? "home"} />}
+                        icon={
+                          <Box
+                            sx={{
+                              display: "grid",
+                              placeItems: "center",
+                              width: 18,
+                              height: 18,
+                              "& span": { fontSize: "1rem" }
+                            }}
+                          >
+                            <SymbolIcon icon={selectedRoom?.icon ?? "home"} />
+                          </Box>
+                        }
+                        sx={{
+                          "& .MuiChip-icon": {
+                            ml: 1,
+                            mr: -0.25
+                          }
+                        }}
                       />
                       <Chip
                         color="secondary"
                         variant="filled"
                         label={`Ort: ${selectedStorageLocation?.name ?? "Nicht gewählt"}`}
+                        icon={
+                          <Box
+                            sx={{
+                              display: "grid",
+                              placeItems: "center",
+                              width: 18,
+                              height: 18,
+                              "& span": { fontSize: "1rem" }
+                            }}
+                          >
+                            <SymbolIcon
+                              icon={
+                                selectedStorageLocation
+                                  ? getStorageIcon(selectedStorageLocation.type)
+                                  : "inventory"
+                              }
+                            />
+                          </Box>
+                        }
+                        sx={{
+                          "& .MuiChip-icon": {
+                            ml: 1,
+                            mr: -0.25
+                          }
+                        }}
                       />
                     </Stack>
                   </Stack>
