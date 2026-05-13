@@ -609,18 +609,17 @@ export function App({ mode, onModeChange }: AppProps) {
             <Stack direction="row" spacing={1.5} alignItems="center" flexGrow={1} minWidth={0}>
               <Box
                 sx={{
-                  display: "grid",
-                  placeItems: "center",
                   width: 44,
                   height: 44,
                   borderRadius: 3,
-                  bgcolor: "primary.main",
-                  color: "primary.contrastText",
-                  flexShrink: 0
+                  overflow: "hidden",
+                  flexShrink: 0,
+                  boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)"
                 }}
-              >
-                <SymbolIcon icon="home_storage" />
-              </Box>
+                component="img"
+                src="/icons/icon-192.png"
+                alt="Hausbestand App-Symbol"
+              />
               <Box sx={{ minWidth: 0 }}>
                 <Typography variant="h6">Hausbestand</Typography>
                 <Typography variant="body2" color="text.secondary" noWrap>
