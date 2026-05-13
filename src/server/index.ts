@@ -496,13 +496,14 @@ app.post("/api/storage-locations", (request, response) => {
     const now = touchTimestamp();
     const id = insertAndGetId(
       `
-        INSERT INTO storage_locations (roomId, name, type, description, createdAt, updatedAt)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO storage_locations (roomId, name, type, isFavorite, description, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
       [
         Number(request.body.roomId),
         requireString(request.body.name, "Name"),
         requireString(request.body.type, "Typ"),
+        request.body.isFavorite ? 1 : 0,
         normalizeOptionalString(request.body.description),
         now,
         now
@@ -522,13 +523,14 @@ app.put("/api/storage-locations/:id", (request, response) => {
     const result = runAndPersist(
       `
         UPDATE storage_locations
-        SET roomId = ?, name = ?, type = ?, description = ?, updatedAt = ?
+        SET roomId = ?, name = ?, type = ?, isFavorite = ?, description = ?, updatedAt = ?
         WHERE id = ? AND updatedAt = ?
       `,
       [
         Number(request.body.roomId),
         requireString(request.body.name, "Name"),
         requireString(request.body.type, "Typ"),
+        request.body.isFavorite ? 1 : 0,
         normalizeOptionalString(request.body.description),
         updatedAt,
         storageLocationId,

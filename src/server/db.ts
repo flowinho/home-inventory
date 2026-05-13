@@ -50,6 +50,7 @@ function initSchema() {
       roomId INTEGER NOT NULL,
       name TEXT NOT NULL,
       type TEXT NOT NULL,
+      isFavorite INTEGER NOT NULL DEFAULT 0,
       description TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
@@ -72,6 +73,7 @@ function initSchema() {
     );
   `);
   ensureColumn("rooms", "icon", "TEXT");
+  ensureColumn("storage_locations", "isFavorite", "INTEGER NOT NULL DEFAULT 0");
 }
 
 export async function initializeDatabase(path: string) {

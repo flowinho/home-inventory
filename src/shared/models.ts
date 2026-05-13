@@ -55,6 +55,7 @@ export interface StorageLocation {
   roomId: number;
   name: string;
   type: StorageType;
+  isFavorite: number;
   description: string | null;
   createdAt: string;
   updatedAt: string;

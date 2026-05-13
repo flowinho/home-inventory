@@ -15,6 +15,7 @@ import {
   DialogTitle,
   Divider,
   Fab,
+  FormControlLabel,
   Grid,
   IconButton,
   InputAdornment,
@@ -23,6 +24,7 @@ import {
   ListItemText,
   MenuItem,
   Stack,
+  Switch,
   Tab,
   Tabs,
   TextField,
@@ -68,6 +70,7 @@ type StorageFormState = {
   roomId: number;
   name: string;
   type: string;
+  isFavorite: boolean;
   description: string;
 };
 
@@ -138,6 +141,7 @@ function emptyStorageForm(roomId?: number): StorageFormState {
     roomId: roomId ?? 0,
     name: "",
     type: STORAGE_TYPES[0],
+    isFavorite: false,
     description: ""
   };
 }
@@ -157,6 +161,7 @@ function emptyItemForm(storageLocationId?: number): ItemFormState {
 
 export function App({ mode, onModeChange }: AppProps) {
   const importInputRef = React.useRef<HTMLInputElement | null>(null);
+  const itemListRef = React.useRef<HTMLDivElement | null>(null);
   const [dashboard, setDashboard] = React.useState<DashboardResponse | null>(null);
   const [alerts, setAlerts] = React.useState<AlertOverview | null>(null);
   const [backups, setBackups] = React.useState<BackupOverview | null>(null);
@@ -239,6 +244,10 @@ export function App({ mode, onModeChange }: AppProps) {
   const visibleItems = selectedStorageLocation
     ? items.filter((item) => item.storageLocationId === selectedStorageLocation.id)
     : [];
+  const favoriteStorageLocations = React.useMemo(
+    () => storageLocations.filter((storageLocation) => storageLocation.isFavorite === 1),
+    [storageLocations]
+  );
 
   React.useEffect(() => {
     if (!selectedRoom && rooms[0]) {
@@ -281,11 +290,25 @@ export function App({ mode, onModeChange }: AppProps) {
             roomId: storageLocation.roomId,
             name: storageLocation.name,
             type: storageLocation.type,
+            isFavorite: storageLocation.isFavorite === 1,
             description: storageLocation.description ?? ""
           }
         : emptyStorageForm(roomId ?? selectedRoomId ?? rooms[0]?.id)
     );
     setStorageDialogOpen(true);
+  };
+
+  const navigateToStorageLocation = (storageLocationId: number) => {
+    const storageLocation = storageLocations.find((candidate) => candidate.id === storageLocationId);
+    if (!storageLocation) {
+      return;
+    }
+    setSelectedRoomId(storageLocation.roomId);
+    setSelectedStorageId(storageLocation.id);
+    setViewMode("uebersicht");
+    window.setTimeout(() => {
+      itemListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
 
   const openItemDialog = (item?: ItemWithLocation, storageLocationId?: number) => {
@@ -867,6 +890,39 @@ export function App({ mode, onModeChange }: AppProps) {
                 </CardContent>
               </Card>
 
+              {favoriteStorageLocations.length > 0 ? (
+                <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+                  <CardContent>
+                    <Stack spacing={1.5}>
+                      <Box>
+                        <Typography variant="h5">Schnellzugriff</Typography>
+                        <Typography color="text.secondary">
+                          Favorisierte Aufbewahrungsorte direkt anspringen.
+                        </Typography>
+                      </Box>
+                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                        {favoriteStorageLocations.map((storageLocation) => {
+                          const room = rooms.find((candidate) => candidate.id === storageLocation.roomId);
+                          return (
+                            <Button
+                              key={storageLocation.id}
+                              variant={
+                                selectedStorageId === storageLocation.id ? "contained" : "outlined"
+                              }
+                              startIcon={<SymbolIcon icon={getStorageIcon(storageLocation.type)} />}
+                              onClick={() => navigateToStorageLocation(storageLocation.id)}
+                            >
+                              {room?.name ? `${room.name}: ` : ""}
+                              {storageLocation.name}
+                            </Button>
+                          );
+                        })}
+                      </Stack>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              ) : null}
+
               {viewMode === "suche" ? (
                 <Card sx={{ border: "1px solid", borderColor: "divider" }}>
                   <CardContent>
@@ -1115,8 +1171,8 @@ export function App({ mode, onModeChange }: AppProps) {
                               key={room.id}
                               variant={selectedRoomId === room.id ? "elevation" : "outlined"}
                               sx={{
-                                minWidth: { xs: 240, md: 280 },
-                                maxWidth: { xs: 240, md: 320 },
+                                minWidth: { xs: 200, md: 220 },
+                                maxWidth: { xs: 200, md: 240 },
                                 cursor: "pointer",
                                 borderWidth: selectedRoomId === room.id ? 2 : 1,
                                 borderColor: selectedRoomId === room.id ? "primary.main" : "divider",
@@ -1150,11 +1206,6 @@ export function App({ mode, onModeChange }: AppProps) {
                                     <Typography mt={0.5} color="text.secondary">
                                       {room.storageCount} Aufbewahrungsorte · {room.itemCount} Gegenstände
                                     </Typography>
-                                    {room.description ? (
-                                      <Typography mt={1.5} variant="body2" color="text.secondary">
-                                        {room.description}
-                                      </Typography>
-                                    ) : null}
                                   </Box>
                                   <Stack direction="row" spacing={0.5}>
                                     <IconButton
@@ -1177,9 +1228,6 @@ export function App({ mode, onModeChange }: AppProps) {
                                     </IconButton>
                                   </Stack>
                                 </Stack>
-                                {selectedRoomId === room.id ? (
-                                  <Chip sx={{ mt: 1.5 }} size="small" color="primary" label="Aktiver Raum" />
-                                ) : null}
                               </CardContent>
                             </Card>
                           ))}
@@ -1214,9 +1262,9 @@ export function App({ mode, onModeChange }: AppProps) {
                               <Card
                                 key={storageLocation.id}
                                 variant={selectedStorageId === storageLocation.id ? "elevation" : "outlined"}
-                                sx={{
-                                  minWidth: { xs: 260, md: 320 },
-                                  maxWidth: { xs: 260, md: 360 },
+                              sx={{
+                                  minWidth: { xs: 220, md: 250 },
+                                  maxWidth: { xs: 220, md: 280 },
                                   cursor: "pointer",
                                   borderWidth: selectedStorageId === storageLocation.id ? 2 : 1,
                                   borderColor:
@@ -1248,7 +1296,12 @@ export function App({ mode, onModeChange }: AppProps) {
                                         <SymbolIcon icon={getStorageIcon(storageLocation.type)} />
                                       </Box>
                                       <Box>
-                                        <Typography fontWeight={700}>{storageLocation.name}</Typography>
+                                        <Stack direction="row" spacing={0.75} alignItems="center">
+                                          <Typography fontWeight={700}>{storageLocation.name}</Typography>
+                                          {storageLocation.isFavorite === 1 ? (
+                                            <SymbolIcon icon="star" />
+                                          ) : null}
+                                        </Stack>
                                         <Typography color="text.secondary">
                                           {storageLocation.type} · {storageLocation.itemCount} Gegenstände
                                         </Typography>
@@ -1275,19 +1328,6 @@ export function App({ mode, onModeChange }: AppProps) {
                                       </IconButton>
                                     </Stack>
                                   </Stack>
-                                  <Stack direction="row" spacing={1} flexWrap="wrap" mt={1.5}>
-                                    {storageLocation.previewItems.map((previewItem) => (
-                                      <Chip
-                                        key={previewItem.id}
-                                        label={`${previewItem.name} · ${formatQuantity(previewItem.quantity)} ${previewItem.unit}`}
-                                        size="small"
-                                        variant="outlined"
-                                      />
-                                    ))}
-                                  </Stack>
-                                  {selectedStorageId === storageLocation.id ? (
-                                    <Chip sx={{ mt: 1.5 }} size="small" color="secondary" label="Aktiver Ort" />
-                                  ) : null}
                                 </CardContent>
                               </Card>
                             ))}
@@ -1303,7 +1343,7 @@ export function App({ mode, onModeChange }: AppProps) {
                     </CardContent>
                   </Card>
 
-                  <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+                  <Card sx={{ border: "1px solid", borderColor: "divider" }} ref={itemListRef}>
                     <CardContent>
                       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                         <Box>
@@ -1539,6 +1579,20 @@ export function App({ mode, onModeChange }: AppProps) {
               onChange={(event) =>
                 setStorageForm((current) => ({ ...current, description: event.target.value }))
               }
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={storageForm.isFavorite}
+                  onChange={(event) =>
+                    setStorageForm((current) => ({
+                      ...current,
+                      isFavorite: event.target.checked
+                    }))
+                  }
+                />
+              }
+              label="Als Favorit für Schnellzugriff markieren"
             />
             {storageForm.id ? (
               <Button
