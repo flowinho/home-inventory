@@ -188,8 +188,10 @@ export function App({ mode, onModeChange }: AppProps) {
   } | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
-  const refreshData = React.useCallback(async () => {
-    setLoading(true);
+  const refreshData = React.useCallback(async (showLoading = true) => {
+    if (showLoading) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const [dashboardResponse, alertsResponse, backupsResponse] = await Promise.all([
@@ -205,7 +207,9 @@ export function App({ mode, onModeChange }: AppProps) {
     } catch (refreshError) {
       setError((refreshError as Error).message);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -427,7 +431,7 @@ export function App({ mode, onModeChange }: AppProps) {
         method: "POST",
         body: JSON.stringify(body ?? {})
       });
-      await refreshData();
+      await refreshData(false);
     } catch (mutationError) {
       setError((mutationError as Error).message);
     }
@@ -722,16 +726,15 @@ export function App({ mode, onModeChange }: AppProps) {
           >
             <CardContent>
               <Grid container spacing={2} alignItems="center">
-                <Grid size={{ xs: 12, md: 5 }}>
+                <Grid size={{ xs: 12 }}>
                   <Stack spacing={1}>
-                    <Typography variant="h4">Schneller Überblick</Typography>
+                    <Typography variant="h5">Suche</Typography>
                     <Typography color="text.secondary">
-                      Füge Räume, Aufbewahrungsorte und Gegenstände direkt hinzu und passe Mengen mit
-                      wenigen Fingertipps an.
+                      Suche nach Gegenständen, um sie schnell im Hausbestand zu finden.
                     </Typography>
                   </Stack>
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Suche nach Gegenständen"
@@ -748,24 +751,6 @@ export function App({ mode, onModeChange }: AppProps) {
                       )
                     }}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <Stack direction="row" spacing={1} justifyContent={{ xs: "flex-start", md: "flex-end" }}>
-                    <Button
-                      variant="contained"
-                      startIcon={<SymbolIcon icon="add_home" />}
-                      onClick={() => openRoomDialog()}
-                    >
-                      Raum hinzufügen
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<SymbolIcon icon="add_box" />}
-                      onClick={() => openItemDialog(undefined, selectedStorageId ?? undefined)}
-                    >
-                      Gegenstand
-                    </Button>
-                  </Stack>
                 </Grid>
               </Grid>
             </CardContent>
@@ -1339,7 +1324,7 @@ export function App({ mode, onModeChange }: AppProps) {
                               <Card
                                 key={storageLocation.id}
                                 variant={selectedStorageId === storageLocation.id ? "elevation" : "outlined"}
-                              sx={{
+                                sx={{
                                   minWidth: { xs: 220, md: 250 },
                                   maxWidth: { xs: 220, md: 280 },
                                   cursor: "pointer",
@@ -1357,35 +1342,59 @@ export function App({ mode, onModeChange }: AppProps) {
                                 }}
                                 onClick={() => setSelectedStorageId(storageLocation.id)}
                               >
-                                <CardContent sx={{ pb: "16px !important" }}>
-                                  <Stack direction="row" justifyContent="space-between" spacing={1.5}>
-                                    <Stack direction="row" spacing={1.5} alignItems="center">
+                                <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+                                  <Stack spacing={1.25}>
+                                    <Stack
+                                      direction="row"
+                                      spacing={1.25}
+                                      alignItems="center"
+                                      sx={{ minWidth: 0 }}
+                                    >
                                       <Box
                                         sx={{
                                           display: "grid",
                                           placeItems: "center",
-                                          width: 42,
-                                          height: 42,
-                                          borderRadius: 3,
+                                          width: 38,
+                                          height: 38,
+                                          borderRadius: 2.5,
                                           bgcolor: "action.hover"
                                         }}
                                       >
                                         <SymbolIcon icon={getStorageIcon(storageLocation.type)} />
                                       </Box>
-                                      <Box>
-                                        <Stack direction="row" spacing={0.75} alignItems="center">
-                                          <Typography fontWeight={700}>{storageLocation.name}</Typography>
+                                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                                        <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0 }}>
+                                          <Typography fontWeight={700} noWrap>
+                                            {storageLocation.name}
+                                          </Typography>
                                           {storageLocation.isFavorite === 1 ? (
-                                            <SymbolIcon icon="star" />
+                                            <Box
+                                              sx={{
+                                                display: "grid",
+                                                placeItems: "center",
+                                                color: "warning.main",
+                                                flexShrink: 0,
+                                                "& span": { fontSize: "1rem" }
+                                              }}
+                                            >
+                                              <SymbolIcon icon="star" />
+                                            </Box>
                                           ) : null}
                                         </Stack>
-                                        <Typography color="text.secondary">
+                                        <Typography color="text.secondary" variant="body2" noWrap>
                                           {storageLocation.type} · {storageLocation.itemCount} Gegenstände
                                         </Typography>
                                       </Box>
                                     </Stack>
-                                    <Stack direction="row" spacing={0.5}>
+
+                                    <Stack
+                                      direction="row"
+                                      spacing={0.5}
+                                      justifyContent="flex-end"
+                                      flexWrap="wrap"
+                                    >
                                       <IconButton
+                                        size="small"
                                         aria-label={`${storageLocation.name} bearbeiten`}
                                         onClick={(event) => {
                                           event.stopPropagation();
@@ -1395,6 +1404,7 @@ export function App({ mode, onModeChange }: AppProps) {
                                         <SymbolIcon icon="edit" />
                                       </IconButton>
                                       <IconButton
+                                        size="small"
                                         aria-label={`Gegenstand in ${storageLocation.name} hinzufügen`}
                                         onClick={(event) => {
                                           event.stopPropagation();
@@ -1495,9 +1505,6 @@ export function App({ mode, onModeChange }: AppProps) {
                                     onClick={() => mutateItem(item.id, "increase", { amount: 1 })}
                                   >
                                     +
-                                  </Button>
-                                  <Button size="small" onClick={() => mutateItem(item.id, "consume")}>
-                                    Entnehmen
                                   </Button>
                                   <IconButton
                                     size="small"
