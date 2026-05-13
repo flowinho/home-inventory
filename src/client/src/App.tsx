@@ -782,6 +782,22 @@ export function App({ mode, onModeChange }: AppProps) {
               "& .MuiTabs-flexContainer": {
                 gap: 1,
                 flexWrap: "wrap"
+              },
+              "& .MuiTab-root": {
+                minHeight: 44,
+                borderRadius: 999,
+                border: "1px solid",
+                borderColor: "divider",
+                textTransform: "none",
+                bgcolor: "background.paper",
+                color: "text.primary",
+                "&.Mui-selected": {
+                  bgcolor: "primary.main",
+                  color: "primary.contrastText"
+                }
+              },
+              "& .MuiTab-root .MuiTab-iconWrapper": {
+                color: "inherit"
               }
             }}
           >
@@ -790,61 +806,24 @@ export function App({ mode, onModeChange }: AppProps) {
               icon={<SymbolIcon icon="grid_view" />}
               iconPosition="start"
               label="Übersicht"
-              sx={{
-                minHeight: 44,
-                borderRadius: 999,
-                border: "1px solid",
-                borderColor: "divider",
-                textTransform: "none",
-                bgcolor: viewMode === "uebersicht" ? "primary.main" : "background.paper",
-                color: viewMode === "uebersicht" ? "primary.contrastText !important" : "text.primary"
-              }}
             />
             <Tab
               value="suche"
               icon={<SymbolIcon icon="search" />}
               iconPosition="start"
               label="Suche"
-              sx={{
-                minHeight: 44,
-                borderRadius: 999,
-                border: "1px solid",
-                borderColor: "divider",
-                textTransform: "none",
-                bgcolor: viewMode === "suche" ? "primary.main" : "background.paper",
-                color: viewMode === "suche" ? "primary.contrastText !important" : "text.primary"
-              }}
             />
             <Tab
               value="hinweise"
               icon={<SymbolIcon icon="notifications" />}
               iconPosition="start"
               label="Hinweise"
-              sx={{
-                minHeight: 44,
-                borderRadius: 999,
-                border: "1px solid",
-                borderColor: "divider",
-                textTransform: "none",
-                bgcolor: viewMode === "hinweise" ? "primary.main" : "background.paper",
-                color: viewMode === "hinweise" ? "primary.contrastText !important" : "text.primary"
-              }}
             />
             <Tab
               value="einstellungen"
               icon={<SymbolIcon icon="settings" />}
               iconPosition="start"
               label="Einstellungen"
-              sx={{
-                minHeight: 44,
-                borderRadius: 999,
-                border: "1px solid",
-                borderColor: "divider",
-                textTransform: "none",
-                bgcolor: viewMode === "einstellungen" ? "primary.main" : "background.paper",
-                color:
-                  viewMode === "einstellungen" ? "primary.contrastText !important" : "text.primary"
-              }}
             />
           </Tabs>
 
@@ -1459,7 +1438,7 @@ export function App({ mode, onModeChange }: AppProps) {
                                       />
                                     ) : null}
                                     {item.expirationDate ? (
-                                      <Chip size="small" label={`MHD/BBD: ${formatDate(item.expirationDate)}`} />
+                                      <Chip size="small" label={`MHD: ${formatDate(item.expirationDate)}`} />
                                     ) : null}
                                   </Stack>
                                   {item.notes ? (
