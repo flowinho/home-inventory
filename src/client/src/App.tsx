@@ -8,6 +8,7 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  Collapse,
   Container,
   Dialog,
   DialogActions,
@@ -168,6 +169,7 @@ export function App({ mode, onModeChange }: AppProps) {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>("uebersicht");
+  const [expiringBannerOpen, setExpiringBannerOpen] = React.useState(false);
   const [selectedRoomId, setSelectedRoomId] = React.useState<number | null>(null);
   const [selectedStorageId, setSelectedStorageId] = React.useState<number | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -644,74 +646,6 @@ export function App({ mode, onModeChange }: AppProps) {
             </Tooltip>
           </Toolbar>
 
-          <Box
-            sx={{
-              px: { xs: 1.5, sm: 2.5 },
-              pb: 1,
-              overflowX: "auto",
-              scrollbarWidth: "thin"
-            }}
-          >
-            <Stack direction="row" spacing={1} minWidth="max-content" alignItems="center">
-              <Chip
-                label={
-                  <Stack direction="row" spacing={0.75} alignItems="center">
-                    <Box
-                      sx={{
-                        display: "grid",
-                        placeItems: "center",
-                        width: 18,
-                        height: 18,
-                        "& span": { fontSize: "1rem" }
-                      }}
-                    >
-                      <SymbolIcon icon="grid_view" />
-                    </Box>
-                    <span>Übersicht</span>
-                  </Stack>
-                }
-                clickable
-                color={viewMode === "uebersicht" ? "primary" : "default"}
-                variant={viewMode === "uebersicht" ? "filled" : "outlined"}
-                onClick={() => setViewMode("uebersicht")}
-              />
-              {rooms.map((room) => (
-                <Chip
-                  key={room.id}
-                  label={room.name}
-                  clickable
-                  color={selectedRoomId === room.id ? "primary" : "default"}
-                  variant={selectedRoomId === room.id ? "filled" : "outlined"}
-                  onClick={() => {
-                    setSelectedRoomId(room.id);
-                    setViewMode("uebersicht");
-                  }}
-                />
-              ))}
-              <Chip
-                label={
-                  <Stack direction="row" spacing={0.75} alignItems="center">
-                    <Box
-                      sx={{
-                        display: "grid",
-                        placeItems: "center",
-                        width: 18,
-                        height: 18,
-                        "& span": { fontSize: "1rem" }
-                      }}
-                    >
-                      <SymbolIcon icon="settings" />
-                    </Box>
-                    <span>Einstellungen</span>
-                  </Stack>
-                }
-                clickable
-                color={viewMode === "einstellungen" ? "primary" : "default"}
-                variant={viewMode === "einstellungen" ? "filled" : "outlined"}
-                onClick={() => setViewMode("einstellungen")}
-              />
-            </Stack>
-          </Box>
         </Box>
       </AppBar>
 
@@ -834,26 +768,51 @@ export function App({ mode, onModeChange }: AppProps) {
                 >
                   <CardContent>
                     <Stack spacing={1.5}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <SymbolIcon icon="event_busy" />
-                        <Typography variant="h5">Bald ablaufend</Typography>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        justifyContent="space-between"
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => setExpiringBannerOpen((current) => !current)}
+                      >
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <SymbolIcon icon="event_busy" />
+                          <Typography variant="h5">Bald ablaufend</Typography>
+                        </Stack>
+                        <Stack direction="row" spacing={0.75} alignItems="center">
+                          <Chip
+                            size="small"
+                            label={`${alerts.expiringSoon.length}`}
+                            sx={{
+                              bgcolor: "rgba(255,255,255,0.16)",
+                              color: "inherit",
+                              "& .MuiChip-label": { fontWeight: 700 }
+                            }}
+                          />
+                          <SymbolIcon icon={expiringBannerOpen ? "expand_less" : "expand_more"} />
+                        </Stack>
                       </Stack>
-                      <Typography sx={{ color: "inherit", opacity: 0.92 }}>
-                        Diese Artikel nähern sich ihrem MHD und sollten bald geprüft werden.
-                      </Typography>
-                      <Stack spacing={1}>
-                        {alerts.expiringSoon.slice(0, 6).map((item) => (
-                          <Box key={item.id}>
-                            <Typography fontWeight={600}>
-                              {item.name} · {formatQuantity(item.quantity)} {item.unit}
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: "inherit", opacity: 0.9 }}>
-                              {item.roomName} / {item.storageLocationName} · MHD:{" "}
-                              {formatDate(item.expirationDate)}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Stack>
+                      <Collapse in={expiringBannerOpen}>
+                        <Stack spacing={1.5}>
+                          <Typography sx={{ color: "inherit", opacity: 0.92 }}>
+                            Diese Artikel nähern sich ihrem MHD und sollten bald geprüft werden.
+                          </Typography>
+                          <Stack spacing={1}>
+                            {alerts.expiringSoon.slice(0, 6).map((item) => (
+                              <Box key={item.id}>
+                                <Typography fontWeight={600}>
+                                  {item.name} · {formatQuantity(item.quantity)} {item.unit}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: "inherit", opacity: 0.9 }}>
+                                  {item.roomName} / {item.storageLocationName} · MHD:{" "}
+                                  {formatDate(item.expirationDate)}
+                                </Typography>
+                              </Box>
+                            ))}
+                          </Stack>
+                        </Stack>
+                      </Collapse>
                     </Stack>
                   </CardContent>
                 </Card>
